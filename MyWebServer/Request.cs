@@ -77,7 +77,6 @@ namespace MyWebServer
 
             if (_Headers.Count() > 0 && isMethodValid())
             {
-
                 _IsValid = true;
             }
         }

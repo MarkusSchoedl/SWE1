@@ -9,16 +9,30 @@ namespace MyWebServer
 {
     public class Response : IResponse
     {
+        private Dictionary<int, string> _HTTP_Statuscodes;
+
         private Dictionary<string, string> _Headers;
+        private int _ContentLength;
+        private string _ContentType;
+        private int _StatusCode;
+
+
+
 
         public Response()
         {
             _Headers = new Dictionary<string, string>();
+            setHttpStatuscodes();
+            _StatusCode = 0;
         }
 
-        public Response(string rspns)
+        public Response(IRequest req)
         {
             _Headers = new Dictionary<string, string>();
+            setHttpStatuscodes();
+            _StatusCode = 0;
+
+            // open filestream with req.Url.Path
         }
 
 
@@ -27,7 +41,7 @@ namespace MyWebServer
         /// </summary>
         public IDictionary<string, string> Headers
         {
-            get;
+            get { return _Headers; }
         }
 
         /// <summary>
@@ -35,7 +49,7 @@ namespace MyWebServer
         /// </summary>
         public int ContentLength
         {
-            get;
+            get { return _ContentLength; }
         }
 
         /// <summary>
@@ -44,8 +58,8 @@ namespace MyWebServer
         /// <exception cref="InvalidOperationException">A specialized implementation may throw a InvalidOperationException when the content type is set by the implementation.</exception>
         public string ContentType
         {
-            get;
-            set;
+            get { return _ContentType; }
+            set { _ContentType = value; }
         }
 
         /// <summary>
@@ -53,15 +67,32 @@ namespace MyWebServer
         /// </summary>
         public int StatusCode
         {
-            get;
-            set;
+            get
+            {
+                if (_StatusCode == 0)
+                {
+                    throw new Exception();
+                }
+                return _StatusCode;
+            }
+            set { _StatusCode = value; }
         }
         /// <summary>
         /// Returns the status code as string. (200 OK)
         /// </summary>
         public string Status
         {
-            get;
+            get
+            {
+                if (_HTTP_Statuscodes.ContainsKey(_StatusCode))
+                {
+                    return _StatusCode.ToString() + " " + _HTTP_Statuscodes[_StatusCode];
+                }
+                else
+                {
+                    throw new Exception();
+                }
+            }
         }
 
         /// <summary>
@@ -80,7 +111,14 @@ namespace MyWebServer
         /// <param name="value"></param>
         public void AddHeader(string header, string value)
         {
-
+            if (_Headers.ContainsKey(header))
+            {
+                _Headers[header] = value;
+            }
+            else
+            {
+                _Headers.Add(header, value);
+            }
         }
 
         /// <summary>
@@ -115,6 +153,33 @@ namespace MyWebServer
         public void Send(Stream network)
         {
 
+        }
+
+        protected void setHttpStatuscodes()
+        {
+            _HTTP_Statuscodes = new Dictionary<int, string>();
+
+            /* This is by far NOT the full list! */
+            _HTTP_Statuscodes.Add(100, "Continue");
+            _HTTP_Statuscodes.Add(101, "Switching Protocols");
+            _HTTP_Statuscodes.Add(102, "Processing");
+            _HTTP_Statuscodes.Add(200, "OK");
+            _HTTP_Statuscodes.Add(201, "Created");
+            _HTTP_Statuscodes.Add(202, "Accepted");
+            _HTTP_Statuscodes.Add(203, "Non - Authoritative Information");
+            _HTTP_Statuscodes.Add(204, "No Content");
+            _HTTP_Statuscodes.Add(205, "Reset Content");
+            _HTTP_Statuscodes.Add(300, "Multiple Choices");
+            _HTTP_Statuscodes.Add(301, "Moved Permanently");
+            _HTTP_Statuscodes.Add(400, "Bad Request");
+            _HTTP_Statuscodes.Add(401, "Unauthorized");
+            _HTTP_Statuscodes.Add(403, "Forbidden");
+            _HTTP_Statuscodes.Add(404, "Not Found");
+            _HTTP_Statuscodes.Add(405, "Method Not Allowed");
+            _HTTP_Statuscodes.Add(500, "Internal Server Error");
+            _HTTP_Statuscodes.Add(501, "Not Implemented");
+            _HTTP_Statuscodes.Add(502, "Bad Gateway");
+            _HTTP_Statuscodes.Add(503, "Service Unavailable");
         }
     }
 }
