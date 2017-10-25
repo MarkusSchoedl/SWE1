@@ -16,8 +16,7 @@ namespace MyWebServer
         private string _ContentType;
         private int _StatusCode;
 
-
-
+        //encoder!
 
         public Response()
         {
@@ -32,6 +31,14 @@ namespace MyWebServer
             setHttpStatuscodes();
             _StatusCode = 0;
 
+            if(req.IsValid)
+            {
+                if(req.Method == "GET")
+                {
+                    _StatusCode = 200;
+                }
+            }
+
             // open filestream with req.Url.Path
         }
 
@@ -41,8 +48,8 @@ namespace MyWebServer
         /// </summary>
         public IDictionary<string, string> Headers
         {
-            get { return _Headers; }
-        }
+            get { return _Headers; } // Should be get only
+        }// = new Dictionary<string, string>();
 
         /// <summary>
         /// Returns the content length or 0 if no content is set yet.

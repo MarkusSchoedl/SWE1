@@ -21,27 +21,22 @@ namespace MyWebServer
         private string _ContentString;
         private byte[] _ContentBytes;
 
-        public Request()
-        {
-            _Headers = new Dictionary<string, string>();
-            _IsValid = false;
-            _ContentType = "";
-        }
+        private static readonly string[] _ValidOnes = { "GET", "POST", "HEAD", "PUT", "PATCH", "DELETE", "TRACE", "OPTIONS", "CONNECT" };
 
         public Request(System.IO.Stream stream)
         {
+            _ContentStream = stream ?? throw new ArgumentNullException("stream");
             _Headers = new Dictionary<string, string>();
             _IsValid = false;
             _ContentType = "";
-            _ContentStream = stream;
 
             if (stream.CanRead)
             {
-                parseStream();
+                ParseStream();
             }
         }
 
-        protected void parseStream()
+        protected void ParseStream()
         {
             StreamReader reader = new StreamReader(_ContentStream);
 
@@ -83,13 +78,7 @@ namespace MyWebServer
 
         protected bool isMethodValid()
         {
-            string[] validOnes = { "GET", "POST", "HEAD", "PUT", "PATCH", "DELETE", "TRACE", "OPTIONS", "CONNECT" };
-
-            if (validOnes.Contains(_Method))
-            {
-                return true;
-            }
-            return false;
+            return _ValidOnes.Contains(_Method);
         }
 
         /// <summary>
@@ -121,7 +110,7 @@ namespace MyWebServer
         /// </summary>
         public IDictionary<string, string> Headers
         {
-            get { return _Headers; }
+            get { return new Dictionary<string, string>(_Headers); }
         }
 
         /// <summary>
