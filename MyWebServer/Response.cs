@@ -15,6 +15,7 @@ namespace MyWebServer
         private int _ContentLength;
         private string _ContentType;
         private int _StatusCode;
+        private string _Response = "BIF-SWE1-Server";
 
         //encoder!
 
@@ -33,11 +34,14 @@ namespace MyWebServer
 
             if(req.IsValid)
             {
-                if(req.Method == "GET")
-                {
-                    _StatusCode = 200;
-                }
+                _StatusCode = _HTTP_Statuscodes.FirstOrDefault(x => x.Value == "OK").Key;
             }
+            else
+            {
+                _StatusCode = _HTTP_Statuscodes.FirstOrDefault(x => x.Value == "Bad Request").Key;
+            }
+
+       
 
             // open filestream with req.Url.Path
         }
@@ -107,8 +111,14 @@ namespace MyWebServer
         /// </summary>
         public string ServerHeader
         {
-            get;
-            set;
+            get
+            {
+                return _Response;
+            }
+            set
+            {
+                _Response = value;
+            }
         }
 
         /// <summary>

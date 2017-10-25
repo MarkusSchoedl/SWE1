@@ -59,7 +59,7 @@ namespace MyWebServer
             _Method = requestFields[0].ToUpper();
 
             _Url = new MyWebServer.Url(requestFields[1]);
-            //_Method = requestFields[2];
+            _Method = requestFields[0];
 
             string line;
             string[] keyNvalue;
