@@ -16,7 +16,16 @@ namespace MyWebServer
         /// <returns>A score between 0 and 1</returns>
         public float CanHandle(IRequest req)
         {
-            return 0.5f;
+            Response resp = new Response(req);
+
+            if(resp.StatusCode == 200)
+            {
+                return 0.5f;
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         /// <summary>

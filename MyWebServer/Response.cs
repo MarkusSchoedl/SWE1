@@ -12,27 +12,30 @@ namespace MyWebServer
         private Dictionary<int, string> _HTTP_Statuscodes;
 
         private Dictionary<string, string> _Headers;
-        private int _ContentLength;
-        private string _ContentType;
+        private String _ContentType;
         private int _StatusCode;
-        private string _Response = "BIF-SWE1-Server";
+        private String _Response;
+        private Byte[] _Content;
+        private String _DefaultServer = "BIF-SWE1-Server";
 
-        //encoder!
+        private Encoding _Encoder = Encoding.UTF8;
 
         public Response()
         {
             _Headers = new Dictionary<string, string>();
-            setHttpStatuscodes();
+            SetHttpStatuscodes();
             _StatusCode = 0;
+
+            AddHeader("Server", _DefaultServer);
         }
 
         public Response(IRequest req)
         {
             _Headers = new Dictionary<string, string>();
-            setHttpStatuscodes();
+            SetHttpStatuscodes();
             _StatusCode = 0;
 
-            if(req.IsValid)
+            if (req.IsValid)
             {
                 _StatusCode = _HTTP_Statuscodes.FirstOrDefault(x => x.Value == "OK").Key;
             }
@@ -41,11 +44,34 @@ namespace MyWebServer
                 _StatusCode = _HTTP_Statuscodes.FirstOrDefault(x => x.Value == "Bad Request").Key;
             }
 
-       
+            AddHeader("Server", _DefaultServer);
 
             // open filestream with req.Url.Path
-        }
+            try
+            {
+                string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                using (FileStream fs = File.Open(dir + req.Url.Path, FileMode.Open, FileAccess.Read, FileShare.None))
+                {
+                    byte[] b = new byte[1024];
+                    _Content = new Byte[0];
 
+                    while (fs.Read(b, 0, b.Length) > 0)
+                    {
+                        byte[] rv = new byte[_Content.Length + b.Length];
+                        System.Buffer.BlockCopy(_Content, 0, rv, 0, _Content.Length);
+                        System.Buffer.BlockCopy(b, 0, rv, _Content.Length, b.Length);
+                        _Content = rv;
+                    }
+                }
+            }
+            catch(FileNotFoundException e)
+            {
+                Console.Write("A requested File was not found: {0}", req.Url.Path);
+                _StatusCode = _HTTP_Statuscodes.FirstOrDefault(x => x.Value == "Not Found").Key; ;
+            }
+            
+            _Response = "HTTP/1.1 " + Status;
+        }
 
         /// <summary>
         /// Returns a writable dictionary of the response headers. Never returns null.
@@ -60,7 +86,17 @@ namespace MyWebServer
         /// </summary>
         public int ContentLength
         {
-            get { return _ContentLength; }
+            get
+            {
+                if (_Content == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return _Content.Length;
+                }
+            }
         }
 
         /// <summary>
@@ -82,11 +118,15 @@ namespace MyWebServer
             {
                 if (_StatusCode == 0)
                 {
-                    throw new Exception();
+                    throw new HTTPStatusCodeNotSetException();
                 }
                 return _StatusCode;
             }
-            set { _StatusCode = value; }
+            set
+            {
+                _StatusCode = value;
+                _Response = "HTTP/1.1 " + Status;
+            }
         }
         /// <summary>
         /// Returns the status code as string. (200 OK)
@@ -101,7 +141,7 @@ namespace MyWebServer
                 }
                 else
                 {
-                    throw new Exception();
+                    throw new HTTPStatusCodeNotSetException();
                 }
             }
         }
@@ -113,11 +153,11 @@ namespace MyWebServer
         {
             get
             {
-                return _Response;
+                return _Headers["Server"];
             }
             set
             {
-                _Response = value;
+                AddHeader("Server", value);
             }
         }
 
@@ -144,7 +184,7 @@ namespace MyWebServer
         /// <param name="content"></param>
         public void SetContent(string content)
         {
-
+            _Content = _Encoder.GetBytes(content);
         }
         /// <summary>
         /// Sets a byte[] as content.
@@ -152,7 +192,7 @@ namespace MyWebServer
         /// <param name="content"></param>
         public void SetContent(byte[] content)
         {
-
+            _Content = content;
         }
         /// <summary>
         /// Sets the stream as content.
@@ -160,7 +200,7 @@ namespace MyWebServer
         /// <param name="stream"></param>
         public void SetContent(Stream stream)
         {
-
+            _Content = _Encoder.GetBytes(stream.ToString());
         }
 
         /// <summary>
@@ -169,10 +209,60 @@ namespace MyWebServer
         /// <param name="network"></param>
         public void Send(Stream network)
         {
+            if (_Response == null)
+            {
+                throw new RequestNotSetException();
+            }
 
+            if (network.CanWrite)
+            {
+                // throw exception if status code is set to OK but no Content(-Type) is set
+                if (_StatusCode == 200 && _ContentType != null && _Content == null)
+                {
+                    throw new NoContentSetException();
+                }
+
+                Byte[] response = _Encoder.GetBytes(_Response + "\r\n");
+                network.Write(response, 0, response.Length);
+
+                //write headers
+                String headerString = "";
+                foreach (var header in _Headers)
+                {
+                    headerString += header.Key + ": " + header.Value + "\n";
+                }
+
+                network.Write(_Encoder.GetBytes(headerString), 0, _Encoder.GetBytes(headerString).Length);
+
+                network.Write(_Encoder.GetBytes("\n"), 0, 1);
+
+                if (_Content != null)
+                {
+                    //write content
+                    network.Write(_Content, 0, _Content.Length);
+                }
+
+                network.Flush();
+            }
+            else
+            {
+                throw new NetworkNotWriteableException();
+            }
         }
 
-        protected void setHttpStatuscodes()
+        protected byte[] CombineBytes(params byte[][] arrays)
+        {
+            byte[] rv = new byte[arrays.Sum(a => a.Length)];
+            int offset = 0;
+            foreach (byte[] array in arrays)
+            {
+                System.Buffer.BlockCopy(array, 0, rv, offset, array.Length);
+                offset += array.Length;
+            }
+            return rv;
+        }
+
+        protected void SetHttpStatuscodes()
         {
             _HTTP_Statuscodes = new Dictionary<int, string>();
 

@@ -13,7 +13,6 @@ namespace MyWebServer
         private string _Method;
         private bool _IsValid;
         private Url _Url;
-        private string _UserAgent;
         private int _HeaderCount;
         private int _ContentLength;
         private string _ContentType;
@@ -25,7 +24,7 @@ namespace MyWebServer
 
         public Request(System.IO.Stream stream)
         {
-            _ContentStream = stream ?? throw new ArgumentNullException("stream");
+            _ContentStream = stream ?? throw new RequestStreamNullOrEmptyException("stream");
             _Headers = new Dictionary<string, string>();
             _IsValid = false;
             _ContentType = "";
@@ -57,16 +56,14 @@ namespace MyWebServer
                 return;
             }
             _Method = requestFields[0].ToUpper();
-
             _Url = new MyWebServer.Url(requestFields[1]);
-            _Method = requestFields[0];
 
             string line;
             string[] keyNvalue;
             while ((line = reader.ReadLine()) != null && !String.IsNullOrEmpty(line))
             {
-                keyNvalue = line.Split(':');
-                _Headers.Add(keyNvalue[0], keyNvalue[1]);
+                keyNvalue = line.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries);
+                _Headers.Add(keyNvalue[0].ToLower(), keyNvalue[1]);
                 _HeaderCount++;
             }
 
@@ -78,7 +75,7 @@ namespace MyWebServer
 
         protected bool isMethodValid()
         {
-            return _ValidOnes.Contains(_Method);
+            return _ValidOnes.Contains(_Method.ToUpper());
         }
 
         /// <summary>
@@ -118,7 +115,7 @@ namespace MyWebServer
         /// </summary>
         public string UserAgent
         {
-            get { return _UserAgent; }
+            get { return _Headers["user-agent"]; }
         }
 
         /// <summary>
