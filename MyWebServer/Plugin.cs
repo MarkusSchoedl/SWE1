@@ -18,7 +18,7 @@ namespace MyWebServer
         {
             Response resp = new Response(req);
 
-            if(resp.StatusCode == 200)
+            if(resp.StatusCode == 200 || (req.Url.Parameter.ContainsKey("test_plugin") &&  req.Url.Parameter["test_plugin"] == "true"))
             {
                 return 0.5f;
             }
