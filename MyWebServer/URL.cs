@@ -14,6 +14,8 @@ namespace MyWebServer
         private string _FileName;
         private string _Fragment;
         private string[] _Segments;
+        private string _DefaultPage = "/index.html";
+
         private Dictionary<string, string> _Parameter;
 
         public Url()
@@ -101,6 +103,11 @@ namespace MyWebServer
                         _Parameter.Add(keynvalue[0], keynvalue[1]);
                     }
                 }
+            }
+            
+            if (_Path == "/") // If "/" was requested, switch to the default page
+            {
+                _Path = _DefaultPage;
             }
         }
 
