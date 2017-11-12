@@ -103,4 +103,20 @@ namespace MyWebServer
         {
         }
     }
+    class CouldntConvertContentLengthException : Exception
+    {
+        public CouldntConvertContentLengthException()
+        {
+        }
+
+        public CouldntConvertContentLengthException(string message)
+        : base(message)
+        {
+        }
+
+        public CouldntConvertContentLengthException(string message, Exception inner)
+        : base(message, inner)
+        {
+        }
+    }
 }

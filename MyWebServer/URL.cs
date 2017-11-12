@@ -8,6 +8,7 @@ namespace MyWebServer
 {
     public class Url : IUrl
     {
+        #region Parameters
         private string _Path;
         private string _RawUrl;
         private string _Extension;
@@ -17,7 +18,9 @@ namespace MyWebServer
         private string _DefaultPage = "/index.html";
 
         private Dictionary<string, string> _Parameter;
+        #endregion
 
+        #region Constructor
         public Url()
         {
             // everything empty
@@ -110,7 +113,9 @@ namespace MyWebServer
                 _Path = _DefaultPage;
             }
         }
+        #endregion
 
+        #region SettersGetters
         public IDictionary<string, string> Parameter
         {
             get { return _Parameter; }
@@ -150,5 +155,6 @@ namespace MyWebServer
         {
             get { return _Segments; }
         }
+        #endregion
     }
 }

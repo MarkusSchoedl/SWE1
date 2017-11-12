@@ -9,6 +9,7 @@ namespace MyWebServer
 {
     public class Response : IResponse
     {
+        #region Parameters
         private Dictionary<int, string> _HTTP_Statuscodes;
 
         private Dictionary<string, string> _Headers;
@@ -19,7 +20,9 @@ namespace MyWebServer
         private String _DefaultServer = "BIF-SWE1-Server";
 
         private Encoding _Encoder = Encoding.UTF8;
+        #endregion
 
+        #region Constructor
         public Response()
         {
             _Headers = new Dictionary<string, string>();
@@ -64,7 +67,7 @@ namespace MyWebServer
                     }
                 }
             }
-            catch(FileNotFoundException e)
+            catch(FileNotFoundException)
             {
                 Console.Write("A requested File was not found: {0}", req.Url.Path);
                 _StatusCode = _HTTP_Statuscodes.FirstOrDefault(x => x.Value == "Not Found").Key; ;
@@ -72,7 +75,9 @@ namespace MyWebServer
             
             _Response = "HTTP/1.1 " + Status;
         }
+        #endregion
 
+        #region SettersGetters
         /// <summary>
         /// Returns a writable dictionary of the response headers. Never returns null.
         /// </summary>
@@ -202,7 +207,9 @@ namespace MyWebServer
         {
             _Content = _Encoder.GetBytes(stream.ToString());
         }
+        #endregion
 
+        #region Methods
         /// <summary>
         /// Sends the response to the network stream.
         /// </summary>
@@ -222,7 +229,7 @@ namespace MyWebServer
                     throw new NoContentSetException();
                 }
 
-                Byte[] response = _Encoder.GetBytes(_Response + "\r\n");
+                Byte[] response = _Encoder.GetBytes(_Response + "\n");
                 network.Write(response, 0, response.Length);
 
                 //write headers
@@ -276,5 +283,6 @@ namespace MyWebServer
             _HTTP_Statuscodes.Add(502, "Bad Gateway");
             _HTTP_Statuscodes.Add(503, "Service Unavailable");
         }
+        #endregion
     }
 }

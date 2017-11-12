@@ -9,36 +9,38 @@ namespace MyWebServer
 {
     public class Request : IRequest
     {
+        #region Parameters
         private Dictionary<string, string> _Headers;
         private string _Method;
         private bool _IsValid;
         private Url _Url;
         private int _HeaderCount;
-        private int _ContentLength;
+        //private int _ContentLength;
         private string _ContentType;
         private Stream _ContentStream;
+        private Byte[] _ContentBytes;
         private string _ContentString;
-        private byte[] _ContentBytes;
 
         private static readonly string[] _ValidOnes = { "GET", "POST", "HEAD", "PUT", "PATCH", "DELETE", "TRACE", "OPTIONS", "CONNECT" };
+        #endregion Parameters
 
         public Request(System.IO.Stream stream)
         {
-            _ContentStream = stream ?? throw new RequestStreamNullOrEmptyException("stream");
             _Headers = new Dictionary<string, string>();
             _IsValid = false;
             _ContentType = "";
 
             if (stream.CanRead)
             {
-                ParseStream();
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    ParseStream(reader);
+                }
             }
         }
 
-        protected void ParseStream()
+        protected void ParseStream(System.IO.StreamReader reader)
         {
-            StreamReader reader = new StreamReader(_ContentStream);
-
             if (reader.EndOfStream)
             {
                 return;
@@ -65,6 +67,13 @@ namespace MyWebServer
                 keyNvalue = line.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries);
                 _Headers.Add(keyNvalue[0].ToLower(), keyNvalue[1]);
                 _HeaderCount++;
+            }
+
+            if (!reader.EndOfStream)
+            {
+                _ContentString = reader.ReadToEnd();
+                _ContentStream = GenerateStreamFromString(_ContentString);
+                _ContentBytes = Encoding.UTF8.GetBytes(_ContentString);
             }
 
             if (_Headers.Count() > 0 && isMethodValid())
@@ -131,7 +140,18 @@ namespace MyWebServer
         /// </summary>
         public int ContentLength
         {
-            get { return _ContentLength; }
+            get
+            {
+                int ret;
+                if(Int32.TryParse(_Headers["content-length"], out ret))
+                {
+                    return ret;
+                }
+                else
+                {
+                    throw new CouldntConvertContentLengthException();
+                }
+            }
         }
 
         /// <summary>
@@ -139,15 +159,30 @@ namespace MyWebServer
         /// </summary>
         public string ContentType
         {
-            get { return _ContentType; }
+            get
+            {
+                _ContentType = _Headers["content-type"];
+                return _ContentType;
+            }
         }
 
         /// <summary>
         /// Returns the request content (body) stream or null if there is no content stream.
         /// </summary>
-        public Stream ContentStream
+        public Stream ContentStream {
+            get
+            {
+                return _ContentStream;
+            }
+        }
+        public static Stream GenerateStreamFromString(string s)
         {
-            get { return _ContentStream; }
+            MemoryStream stream = new MemoryStream();
+            StreamWriter writer = new StreamWriter(stream);
+            writer.Write(s);
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
         }
 
         /// <summary>
@@ -155,7 +190,10 @@ namespace MyWebServer
         /// </summary>
         public string ContentString
         {
-            get { return _ContentString; }
+            get
+            {
+                return _ContentString;
+            }
         }
 
         /// <summary>
@@ -163,7 +201,10 @@ namespace MyWebServer
         /// </summary>
         public byte[] ContentBytes
         {
-            get { return _ContentBytes; }
+            get
+            {
+                return _ContentBytes;
+            }
         }
     }
 }
