@@ -15,17 +15,17 @@ namespace Uebungen
 
         public IPluginManager GetPluginManager()
         {
-            throw new NotImplementedException();
+            return new PluginManager();
         }
 
         public IRequest GetRequest(System.IO.Stream network)
         {
-            throw new NotImplementedException();
+            return new Request(network);
         }
 
         public IPlugin GetStaticFilePlugin()
         {
-            throw new NotImplementedException();
+            return (IPlugin) new StaticFilesPlugin();
         }
 
         public string GetStaticFileUrl(string fileName)

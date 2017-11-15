@@ -48,7 +48,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions.cs" />
-    <Compile Include="TestPlugin.cs" />
+    <Compile Include="PluginManager.cs" />
+    <Compile Include="Plugins\NavigationPlugin.cs" />
+    <Compile Include="Plugins\StaticFilesPlugin.cs" />
+    <Compile Include="Plugins\TempMeasurementPlugin.cs" />
+    <Compile Include="Plugins\TestPlugin.cs" />
+    <Compile Include="Plugins\ToLowerPlugin.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Response.cs" />
     <Compile Include="Program.cs" />
@@ -64,9 +69,7 @@
   <ItemGroup>
     <None Include="my.runsettings" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Plugins\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

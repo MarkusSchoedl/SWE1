@@ -15,19 +15,17 @@ namespace Uebungen
 
         public IPluginManager GetPluginManager()
         {
-            throw new NotImplementedException();
+            return new PluginManager();
         }
 
         public IRequest GetRequest(System.IO.Stream network)
         {
             return new Request(network);
-            //throw new NotImplementedException();
         }
 
         public IResponse GetResponse()
         {
             return new Response();
-            //throw new NotImplementedException();
         }
     }
 }

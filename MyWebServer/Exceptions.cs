@@ -119,4 +119,20 @@ namespace MyWebServer
         {
         }
     }
+    class CouldntFindPluginNameException : Exception
+    {
+        public CouldntFindPluginNameException()
+        {
+        }
+
+        public CouldntFindPluginNameException(string message)
+        : base(message)
+        {
+        }
+
+        public CouldntFindPluginNameException(string message, Exception inner)
+        : base(message, inner)
+        {
+        }
+    }
 }

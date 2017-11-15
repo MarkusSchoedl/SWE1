@@ -205,7 +205,8 @@ namespace MyWebServer
         /// <param name="stream"></param>
         public void SetContent(Stream stream)
         {
-            _Content = _Encoder.GetBytes(stream.ToString());
+            _Content = new Byte[stream.Length];
+            stream.Read(_Content, 0, (int)stream.Length);
         }
         #endregion
 
