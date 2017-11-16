@@ -14,13 +14,18 @@ namespace MyWebServer
 
         public PluginManager()
         {
+            //foreach(Type t in typeof(PluginManager).Assembly.GetTypes())
+            //{
+            //    Add(t.Name);
+            //}
+
+
+
             Add("MyWebServer.ToLowerPlugin");
             Add("MyWebServer.NavigationPlugin");
             Add("MyWebServer.TempMeasurementPlugin");
             Add("MyWebServer.StaticFilesPlugin");
         }
-
-
 
 
         /// <summary>
