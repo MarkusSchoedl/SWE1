@@ -24,6 +24,7 @@ namespace MyWebServer
         private static readonly string[] _ValidOnes = { "GET", "POST", "HEAD", "PUT", "PATCH", "DELETE", "TRACE", "OPTIONS", "CONNECT" };
         #endregion Parameters
 
+        #region Constructor
         public Request(System.IO.Stream stream)
         {
             _Headers = new Dictionary<string, string>();
@@ -38,7 +39,9 @@ namespace MyWebServer
                 }
             }
         }
+        #endregion
 
+        #region Methods
         protected void ParseStream(System.IO.StreamReader reader)
         {
             if (reader.EndOfStream)
@@ -71,18 +74,25 @@ namespace MyWebServer
 
             if (!reader.EndOfStream)
             {
-                _ContentString = reader.ReadToEnd();
-                _ContentStream = GenerateStreamFromString(_ContentString);
-                _ContentBytes = Encoding.UTF8.GetBytes(_ContentString);
+                int contentLength;
+                if (Int32.TryParse(_Headers["content-length"], out contentLength))
+                {
+                    char[] buff = new char[contentLength];
+                    reader.ReadBlock(buff, 0, contentLength);
+
+                    _ContentBytes = Encoding.UTF8.GetBytes(buff);
+                }
             }
 
-            if (_Headers.Count() > 0 && isMethodValid())
+            if (_Headers.Count() > 0 && IsMethodValid())
             {
                 _IsValid = true;
             }
         }
+        #endregion
 
-        protected bool isMethodValid()
+        #region SettersGetters
+        protected bool IsMethodValid()
         {
             return _ValidOnes.Contains(_Method.ToUpper());
         }
@@ -142,8 +152,7 @@ namespace MyWebServer
         {
             get
             {
-                int ret;
-                if(Int32.TryParse(_Headers["content-length"], out ret))
+                if (Int32.TryParse(_Headers["content-length"], out int ret))
                 {
                     return ret;
                 }
@@ -172,17 +181,8 @@ namespace MyWebServer
         public Stream ContentStream {
             get
             {
-                return _ContentStream;
+                return new MemoryStream(_ContentBytes);
             }
-        }
-        public static Stream GenerateStreamFromString(string s)
-        {
-            MemoryStream stream = new MemoryStream();
-            StreamWriter writer = new StreamWriter(stream);
-            writer.Write(s);
-            writer.Flush();
-            stream.Position = 0;
-            return stream;
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace MyWebServer
         {
             get
             {
-                return _ContentString;
+                return Encoding.UTF8.GetString(_ContentBytes);
             }
         }
 
@@ -206,5 +206,6 @@ namespace MyWebServer
                 return _ContentBytes;
             }
         }
+        #endregion
     }
 }

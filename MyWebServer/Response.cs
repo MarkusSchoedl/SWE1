@@ -206,6 +206,7 @@ namespace MyWebServer
         /// <param name="stream"></param>
         public void SetContent(Stream stream)
         {
+            //TODO stream.length may be unset because its a network
             _Content = new Byte[stream.Length];
             stream.Read(_Content, 0, (int)stream.Length);
         }
