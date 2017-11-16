@@ -18,6 +18,7 @@ namespace MyWebServer
         private String _Response;
         private Byte[] _Content;
         private String _DefaultServer = "BIF-SWE1-Server";
+        private static String _SiteFolder = "/Sites";
 
         private Encoding _Encoder = Encoding.UTF8;
         #endregion
@@ -53,7 +54,7 @@ namespace MyWebServer
             try
             {
                 string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                using (FileStream fs = File.Open(dir + req.Url.Path, FileMode.Open, FileAccess.Read, FileShare.None))
+                using (FileStream fs = File.Open(dir + _SiteFolder + req.Url.Path, FileMode.Open, FileAccess.Read, FileShare.None))
                 {
                     byte[] b = new byte[1024];
                     _Content = new Byte[0];
