@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BIF.SWE1.Interfaces;
+using System.IO;
 using MyWebServer;
 
 namespace Uebungen
 {
     public class UEB5 : IUEB5
     {
+        string _StaticFileFolder;
+
         public void HelloWorld()
         {
         }
@@ -30,12 +33,12 @@ namespace Uebungen
 
         public string GetStaticFileUrl(string fileName)
         {
-            throw new NotImplementedException();
+            return Path.Combine(_StaticFileFolder, fileName);
         }
 
         public void SetStatiFileFolder(string folder)
         {
-            throw new NotImplementedException();
+            _StaticFileFolder = folder;
         }
     }
 }

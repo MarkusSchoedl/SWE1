@@ -14,17 +14,12 @@ namespace MyWebServer
 
         public PluginManager()
         {
-            //foreach(Type t in typeof(PluginManager).Assembly.GetTypes())
-            //{
-            //    Add(t.Name);
-            //}
-
-
-
-            Add("MyWebServer.ToLowerPlugin");
-            Add("MyWebServer.NavigationPlugin");
-            Add("MyWebServer.TempMeasurementPlugin");
-            Add("MyWebServer.StaticFilesPlugin");
+            //Add all plugins
+            foreach (Type type in typeof(PluginManager).Assembly.GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract 
+                    && myType.GetInterfaces().Any(i => i == typeof(IPlugin))))
+            {
+                _Plugins.Add((IPlugin)Activator.CreateInstance(type));
+            }
         }
 
 
@@ -59,7 +54,8 @@ namespace MyWebServer
         /// <param name="plugin"></param>
         public void Add(string plugin)
         {
-            IPlugin pluginObj = (IPlugin)System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(plugin);
+            IPlugin pluginObj = (IPlugin)Activator.CreateInstance(Type.GetType(plugin));
+
             if (pluginObj == null)
             {
                 throw new CouldntFindPluginNameException();

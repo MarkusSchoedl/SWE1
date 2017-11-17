@@ -18,7 +18,7 @@ namespace MyWebServer
         private String _Response;
         private Byte[] _Content;
         private String _DefaultServer = "BIF-SWE1-Server";
-        private static String _SiteFolder = "/Sites";
+        private static String _SiteFolder = "Sites";
 
         private Encoding _Encoder = Encoding.UTF8;
         #endregion
@@ -53,27 +53,31 @@ namespace MyWebServer
             // open filestream with req.Url.Path
             try
             {
-                string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                using (FileStream fs = File.Open(dir + _SiteFolder + req.Url.Path, FileMode.Open, FileAccess.Read, FileShare.None))
-                {
-                    byte[] b = new byte[1024];
-                    _Content = new Byte[0];
+                string dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-                    while (fs.Read(b, 0, b.Length) > 0)
-                    {
-                        byte[] rv = new byte[_Content.Length + b.Length];
-                        System.Buffer.BlockCopy(_Content, 0, rv, 0, _Content.Length);
-                        System.Buffer.BlockCopy(b, 0, rv, _Content.Length, b.Length);
-                        _Content = rv;
-                    }
+                string file = req.Url.Path;
+                if (file[0] == '/')
+                {
+                    file = file.Remove(0, 1);
                 }
+
+                string full;
+                if (Path.IsPathRooted(file))
+                {
+                    full = file;
+                }
+                else
+                {
+                    full = Path.Combine(dir, _SiteFolder, file);
+                }
+                _Content = File.ReadAllBytes(full);
             }
-            catch(FileNotFoundException)
+            catch (FileNotFoundException)
             {
                 Console.Write("A requested File was not found: {0}", req.Url.Path);
                 _StatusCode = _HTTP_Statuscodes.FirstOrDefault(x => x.Value == "Not Found").Key; ;
             }
-            
+
             _Response = "HTTP/1.1 " + Status;
         }
         #endregion

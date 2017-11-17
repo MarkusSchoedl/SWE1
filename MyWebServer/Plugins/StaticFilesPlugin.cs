@@ -10,12 +10,12 @@ namespace MyWebServer
     {
         public float CanHandle(IRequest req)
         {
-            return 0.11f;
+            return 0.999f;
         }
 
         public IResponse Handle(IRequest req)
         {
-            throw new NotImplementedException();
+            return new Response(req);
         }
     }
 }

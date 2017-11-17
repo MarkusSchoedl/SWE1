@@ -17,9 +17,7 @@ namespace MyWebServer
         private int _HeaderCount;
         //private int _ContentLength;
         private string _ContentType;
-        private Stream _ContentStream;
         private Byte[] _ContentBytes;
-        private string _ContentString;
 
         private static readonly string[] _ValidOnes = { "GET", "POST", "HEAD", "PUT", "PATCH", "DELETE", "TRACE", "OPTIONS", "CONNECT" };
         #endregion Parameters

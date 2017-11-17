@@ -9,33 +9,37 @@ namespace Uebungen
 {
     public class UEB6 : IUEB6
     {
+        private const string _ToLowerUrl = "";
+        private const string _TemeratureUrl = "";
+        private const string _NaviUrl = "";
+
         public void HelloWorld()
         {
         }
 
         public IPluginManager GetPluginManager()
         {
-            throw new NotImplementedException();
+            return new PluginManager();
         }
 
         public IRequest GetRequest(System.IO.Stream network)
         {
-            throw new NotImplementedException();
+            return new Request(network);
         }
 
         public string GetNaviUrl()
         {
-            throw new NotImplementedException();
+            return _NaviUrl;
         }
 
         public IPlugin GetNavigationPlugin()
         {
-            throw new NotImplementedException();
+            return new NavigationPlugin();
         }
 
         public IPlugin GetTemperaturePlugin()
         {
-            throw new NotImplementedException();
+            return new TempMeasurementPlugin();
         }
 
         public string GetTemperatureRestUrl(DateTime from, DateTime until)
@@ -50,12 +54,12 @@ namespace Uebungen
 
         public IPlugin GetToLowerPlugin()
         {
-            throw new NotImplementedException();
+            return new ToLowerPlugin();
         }
 
         public string GetToLowerUrl()
         {
-            throw new NotImplementedException();
+            return _ToLowerUrl;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace MyWebServer
     {
         public float CanHandle(IRequest req)
         {
-            return 0.13f;
+            return 0.09f;
         }
 
         public IResponse Handle(IRequest req)
