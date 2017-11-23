@@ -28,7 +28,7 @@ namespace MyWebServer
 
             // server beenden
             Console.ReadLine();
-            
+
         }
 
         private static void ContextReceivedCallback(IAsyncResult asyncResult)
@@ -42,8 +42,7 @@ namespace MyWebServer
             _listener.BeginGetContext(new
               AsyncCallback(ContextReceivedCallback), null);
 
-            Console.WriteLine("Request für: {0}",
-              context.Request.Url.LocalPath);
+            Console.WriteLine("Request für: {0}", context.Request.Url.LocalPath);
 
             // request verarbeiten
         }

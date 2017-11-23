@@ -8,6 +8,8 @@ namespace MyWebServer
 {
     class ToLowerPlugin : IPlugin
     {
+        private static string _EmptyMessage = "Bitte geben Sie einen Text ein";
+
         public float CanHandle(IRequest req)
         {
             return 0.09f;
@@ -15,7 +17,18 @@ namespace MyWebServer
 
         public IResponse Handle(IRequest req)
         {
-            throw new NotImplementedException();
+            var rsp = new Response(req);
+            
+            rsp.SetContent(req.ContentString.ToLower());
+
+            //received only "text="
+            if (req.ContentString.Length <= 5)
+            {
+                rsp.SetContent(req.ContentString + _EmptyMessage);
+            }
+
+
+            return rsp;
         }
     }
 }

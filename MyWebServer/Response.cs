@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BIF.SWE1.Interfaces;
+using System.Reflection;
 
 namespace MyWebServer
 {
@@ -53,24 +54,27 @@ namespace MyWebServer
             // open filestream with req.Url.Path
             try
             {
-                string dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                if (req.Url.Path.Length > 0)
+                {
+                    string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-                string file = req.Url.Path;
-                if (file[0] == '/')
-                {
-                    file = file.Remove(0, 1);
-                }
+                    string file = req.Url.Path;
+                    if (file[0] == '/')
+                    {
+                        file = file.Remove(0, 1);
+                    }
 
-                string full;
-                if (Path.IsPathRooted(file))
-                {
-                    full = file;
+                    string full;
+                    if (Path.IsPathRooted(file))
+                    {
+                        full = file;
+                    }
+                    else
+                    {
+                        full = Path.Combine(dir, _SiteFolder, file);
+                    }
+                    _Content = File.ReadAllBytes(full);
                 }
-                else
-                {
-                    full = Path.Combine(dir, _SiteFolder, file);
-                }
-                _Content = File.ReadAllBytes(full);
             }
             catch (FileNotFoundException)
             {
