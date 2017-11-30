@@ -8,9 +8,15 @@ namespace MyWebServer
 {
     class TempMeasurementPlugin : IPlugin
     {
+        public const string _Url = "/temperature";
+
         public float CanHandle(IRequest req)
         {
-            return 0.12f;
+            if (req?.Url?.RawUrl == _Url)
+            {
+                return 1.0f;
+            }
+            return 0.1f;
         }
 
         public IResponse Handle(IRequest req)

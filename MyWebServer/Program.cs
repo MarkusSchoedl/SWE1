@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
+using System.Net.Sockets;
+using BIF.SWE1.Interfaces;
 
 namespace MyWebServer
 {
@@ -15,36 +17,61 @@ namespace MyWebServer
         {
             PluginManager pluginManager = new PluginManager();
 
-            _listener = new HttpListener();
-            _listener.Prefixes.Add("http://*:8080/");
+            TcpListener server = null;
+            try
+            {
+                // Set the TcpListener on port 13000.
+                Int32 port = 8080;
+                IPAddress localAddr = IPAddress.Parse("127.0.0.1");
 
-            // listener starten
-            _listener.Start();
+                // TcpListener server = new TcpListener(port);
+                server = new TcpListener(localAddr, port);
 
-            // auf eingehende requests warten
-            // BeginGetContext benutzt dafür ein ThreadPool thread
-            _listener.BeginGetContext(new
-              AsyncCallback(ContextReceivedCallback), null);
+                // Start listening for client requests.
+                server.Start();
 
-            // server beenden
-            Console.ReadLine();
+                // Enter the listening loop.
+                while (true)
+                {
+                    Console.Write("Waiting for a connection... ");
 
-        }
+                    // Perform a blocking call to accept requests.
+                    // You could also use server.AcceptSocket() here.
+                    Socket client = server.AcceptSocket();
+                    //TcpClient client = server.AcceptTcpClient();
+                    Console.WriteLine("Connected!");
 
-        private static void ContextReceivedCallback(IAsyncResult asyncResult)
-        {
-            HttpListenerContext context;
+                    var stream = new NetworkStream(client);
 
-            // HttpListenerContext abholen
-            context = _listener.EndGetContext(asyncResult);
+                    var req = new Request(stream);
 
-            // neuen thread für eingehende requests starten
-            _listener.BeginGetContext(new
-              AsyncCallback(ContextReceivedCallback), null);
+                    if (req.Url != null)
+                    {
+                        IPlugin plugin = pluginManager.GetHighestPlugin(req);
+                        var rsp = plugin.Handle(req);
 
-            Console.WriteLine("Request für: {0}", context.Request.Url.LocalPath);
+                        // Send back a response.
+                        rsp.Send(stream);
+                    }
 
-            // request verarbeiten
+                    if (req.Method != "POST")
+                        // Shutdown and end connection
+                        client.Close();
+                }
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine("SocketException: {0}", e);
+            }
+            finally
+            {
+                // Stop listening for new clients.
+                server.Stop();
+            }
+
+
+            Console.WriteLine("\nHit enter to continue...");
+            Console.Read();
         }
     }
 }

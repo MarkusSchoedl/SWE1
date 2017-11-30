@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
+using System.Reflection;
+
 using BIF.SWE1.Interfaces;
 
 
@@ -14,9 +17,20 @@ namespace MyWebServer
 
         public PluginManager()
         {
-            //Add all plugins
-            foreach (Type type in typeof(PluginManager).Assembly.GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract 
-                    && myType.GetInterfaces().Any(i => i == typeof(IPlugin))))
+            // create directory Plugins
+
+
+
+            string wdir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            var lst = Directory.GetFiles(wdir)
+                .Where(i => new[] { ".dll", ".exe" }.Contains(Path.GetExtension(i)))
+                .SelectMany(i => Assembly.LoadFrom(i).GetTypes())
+                .Where(myType => myType.IsClass
+                              && !myType.IsAbstract
+                              && myType.GetInterfaces().Any(i => i == typeof(IPlugin)));
+            
+            foreach (Type type in lst)
             {
                 _Plugins.Add((IPlugin)Activator.CreateInstance(type));
             }
@@ -69,6 +83,15 @@ namespace MyWebServer
         public void Clear()
         {
             _Plugins.Clear();
+        }
+
+        public IPlugin GetHighestPlugin(Request req)
+        {
+            return _Plugins.Select(i => new
+            {
+                Value = i.CanHandle(req),
+                Plugin = i
+            }).OrderBy(i => i.Value).Last().Plugin;
         }
     }
 }

@@ -31,10 +31,8 @@ namespace MyWebServer
 
             if (stream.CanRead)
             {
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    ParseStream(reader);
-                }
+                StreamReader reader = new StreamReader(stream);
+                ParseStream(reader);
             }
         }
         #endregion
@@ -70,7 +68,7 @@ namespace MyWebServer
                 _HeaderCount++;
             }
 
-            if (!reader.EndOfStream)
+            if (reader.Peek() >= 0)
             {
                 int contentLength;
                 if (Int32.TryParse(_Headers["content-length"], out contentLength))
@@ -190,6 +188,7 @@ namespace MyWebServer
         {
             get
             {
+                if (_ContentBytes == null) return null;
                 return Encoding.UTF8.GetString(_ContentBytes);
             }
         }

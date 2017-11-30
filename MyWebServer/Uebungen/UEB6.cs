@@ -9,9 +9,9 @@ namespace Uebungen
 {
     public class UEB6 : IUEB6
     {
-        private const string _ToLowerUrl = "";
-        private const string _TemeratureUrl = "";
-        private const string _NaviUrl = "";
+        private const string _ToLowerUrl = ToLowerPlugin._Url;
+        private const string _TemeratureUrl = TempMeasurementPlugin._Url;
+        private const string _NaviUrl = NavigationPlugin._Url;
 
         public void HelloWorld()
         {

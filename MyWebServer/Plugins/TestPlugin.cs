@@ -18,7 +18,7 @@ namespace MyWebServer
         {
             Response resp = new Response(req);
 
-            if(resp.StatusCode == 200 || (req.Url.Parameter.ContainsKey("test_plugin") &&  req.Url.Parameter["test_plugin"] == "true"))
+            if(req.Url != null && (resp.StatusCode == 200 || (req.Url.Parameter.ContainsKey("test_plugin") &&  req.Url.Parameter["test_plugin"] == "true")))
             {
                 Random ran = new Random();
                 return 1-(float)ran.NextDouble(); // 1-Rnd because: 0 >= rnd < 1
