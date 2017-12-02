@@ -15,11 +15,10 @@ namespace MyWebServer
 
         private Dictionary<string, string> _Headers;
         private String _ContentType;
-        private int _StatusCode = 400;
+        private int _StatusCode = 0;
         private String _Response;
         private Byte[] _Content;
         private String _DefaultServer = "BIF-SWE1-Server";
-        private static String _SiteFolder = "Sites";
 
         private Encoding _Encoder = Encoding.UTF8;
         #endregion
@@ -53,8 +52,6 @@ namespace MyWebServer
             }
 
             AddHeader("Server", _DefaultServer);
-
-            LoadContentFromFile(req);
 
             _Response = "HTTP/1.1 " + Status;
         }
@@ -104,7 +101,14 @@ namespace MyWebServer
         {
             get
             {
-                return _StatusCode;
+                if (_StatusCode != 0)
+                {
+                    return _StatusCode;
+                }
+                else
+                {
+                    throw new HTTPStatusCodeNotSetException();
+                }
             }
             set
             {
@@ -191,43 +195,6 @@ namespace MyWebServer
         #endregion
 
         #region Methods
-        protected void LoadContentFromFile(IRequest req)
-        {
-            // open filestream with req.Url.Path
-            try
-            {
-                if (req.Url.Path.Length > 0)
-                {
-                    string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-                    string file = req.Url.Path;
-                    if (file[0] == '/')
-                    {
-                        file = file.Remove(0, 1);
-                    }
-
-                    string full;
-                    if (Path.IsPathRooted(file))
-                    {
-                        full = file;
-                    }
-                    else
-                    {
-                        full = Path.Combine(dir, _SiteFolder, file);
-                    }
-                    _Content = File.ReadAllBytes(full);
-
-                    _ContentType = "text/" + Path.GetExtension(full).Replace(".", "");
-                    _Headers.Add("content-type", _ContentType);
-                }
-            }
-            catch (FileNotFoundException)
-            {
-                Console.Write("A requested File was not found: {0}\n", req.Url.Path);
-                _StatusCode = _HTTP_Statuscodes.FirstOrDefault(x => x.Value == "Not Found").Key; ;
-            }
-        }
-
         /// <summary>
         /// Sends the response to the network stream.
         /// </summary>

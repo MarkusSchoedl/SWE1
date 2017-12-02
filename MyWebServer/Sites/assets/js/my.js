@@ -5,27 +5,9 @@ function parseToLowerText() {
     console.log(txt);
     $.post("/to-lower", { text: txt }, function (result) {
         console.log(result);
-        $("tolower_textbox").html(result);
+        if (result.startsWith("text="))
+            document.getElementById("tolower_textbox").innerHTML = result.substr(5, result.length-5);
+        else
+            document.getElementById("tolower_textbox").innerHTML = result;
     });
-    //var text = document.getElementById("tolower_text").value;
-    //var textbox = document.getElementById("tolower_textbox");
-
-    //console.log(text);
-
-    //$.post("/to-lower", function (data, status) {
-    //    alert("Data: " + data + "\nStatus: " + status);
-    //});
-
-    
-    //$.ajax({
-    //    type: 'POST',
-    //    url: '/to-lower',
-    //    data: 'text=' + text,
-    //    success: function (msg) {
-    //        textbox.innerHTML = msg;
-    //    },
-    //    error: function (msg) {
-    //        console.dir(msg);
-    //    }
-    //});
 }

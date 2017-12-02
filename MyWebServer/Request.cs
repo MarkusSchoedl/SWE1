@@ -40,11 +40,6 @@ namespace MyWebServer
         #region Methods
         protected void ParseStream(System.IO.StreamReader reader)
         {
-            if (reader.EndOfStream)
-            {
-                return;
-            }
-
             // parse the first line
             string requestLine = reader.ReadLine();
             if (String.IsNullOrEmpty(requestLine))

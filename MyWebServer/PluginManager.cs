@@ -18,9 +18,7 @@ namespace MyWebServer
         public PluginManager()
         {
             // create directory Plugins
-
-
-
+            
             string wdir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             var lst = Directory.GetFiles(wdir)

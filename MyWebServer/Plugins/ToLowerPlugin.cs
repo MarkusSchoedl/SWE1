@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Web;
+using System.Net;
 using BIF.SWE1.Interfaces;
 
 namespace MyWebServer
@@ -41,7 +43,7 @@ namespace MyWebServer
                 return rsp;
             }
             
-            rsp.SetContent(req.ContentString.ToLower());
+            rsp.SetContent(HttpUtility.UrlDecode(req.ContentString).ToLower());
 
             //received only "text="
             if (req.ContentString.Length <= 5)

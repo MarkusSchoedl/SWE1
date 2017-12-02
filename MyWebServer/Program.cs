@@ -37,11 +37,12 @@ namespace MyWebServer
 
                     // Perform a blocking call to accept requests.
                     // You could also use server.AcceptSocket() here.
-                    Socket client = server.AcceptSocket();
-                    //TcpClient client = server.AcceptTcpClient();
+                    //Socket client = server.AcceptSocket();
+                    TcpClient client = server.AcceptTcpClient();
                     Console.WriteLine("Connected!");
 
-                    var stream = new NetworkStream(client);
+                    //var stream = new NetworkStream(client);
+                    var stream = client.GetStream();
 
                     var req = new Request(stream);
 
@@ -54,9 +55,8 @@ namespace MyWebServer
                         rsp.Send(stream);
                     }
 
-                    if (req.Method != "POST")
-                        // Shutdown and end connection
-                        client.Close();
+                    // Shutdown and end connection
+                    client.Close();
                 }
             }
             catch (SocketException e)

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BIF.SWE1.Interfaces;
+using System.Reflection;
 
 namespace MyWebServer
 {
@@ -16,12 +17,14 @@ namespace MyWebServer
         /// <returns>A score between 0 and 1</returns>
         public float CanHandle(IRequest req)
         {
+            string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            String siteFolder = "Sites";
             Response resp = new Response(req);
 
-            if(req.Url != null && (resp.StatusCode == 200 || (req.Url.Parameter.ContainsKey("test_plugin") &&  req.Url.Parameter["test_plugin"] == "true")))
+            if ((resp.StatusCode == 200 && (File.Exists(Path.Combine(dir, siteFolder, req.Url.Path.Remove(0, 1).Replace("/", "\\"))) || (req.Url.Parameter.ContainsKey("test_plugin") && req.Url.Parameter["test_plugin"] == "true"))))
             {
                 Random ran = new Random();
-                return 1-(float)ran.NextDouble(); // 1-Rnd because: 0 >= rnd < 1
+                return 1 - (float)ran.NextDouble(); // 1-Rnd because: 0 >= rnd < 1
             }
             else
             {
@@ -36,7 +39,8 @@ namespace MyWebServer
         /// <returns>A new response object.</returns>
         public IResponse Handle(IRequest req)
         {
-            return new Response(req);
+            Response rsp = (Response)new StaticFilesPlugin().Handle(req);
+            return rsp;
         }
-    } 
+    }
 }
