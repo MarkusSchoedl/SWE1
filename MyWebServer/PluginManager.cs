@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Reflection;
+using System.Security.Permissions;
 
 using BIF.SWE1.Interfaces;
 
@@ -12,29 +13,79 @@ namespace MyWebServer
 {
     class PluginManager : IPluginManager
     {
+        #region Parameters
         List<IPlugin> _Plugins = new List<IPlugin>();
+        FileSystemWatcher _DirWatcher = new FileSystemWatcher(_ExecutionLocation, "*.dll");
 
+        static string _ExecutionLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        #endregion Parameters
 
+        #region Constructor
         public PluginManager()
         {
             // create directory Plugins
-            
-            string wdir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-            var lst = Directory.GetFiles(wdir)
+            var lst = Directory.GetFiles(_ExecutionLocation)
                 .Where(i => new[] { ".dll", ".exe" }.Contains(Path.GetExtension(i)))
                 .SelectMany(i => Assembly.LoadFrom(i).GetTypes())
                 .Where(myType => myType.IsClass
                               && !myType.IsAbstract
                               && myType.GetInterfaces().Any(i => i == typeof(IPlugin)));
-            
+
             foreach (Type type in lst)
             {
-                _Plugins.Add((IPlugin)Activator.CreateInstance(type));
+                Add((IPlugin)Activator.CreateInstance(type));
+            }
+
+            //FileSystemWatcher
+            _DirWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
+                | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+
+            // Add event handlers
+            _DirWatcher.Changed += new FileSystemEventHandler(OnChanged);
+            _DirWatcher.Created += new FileSystemEventHandler(OnChanged);
+            _DirWatcher.Deleted += new FileSystemEventHandler(OnChanged);
+
+            // Begin watching
+            _DirWatcher.EnableRaisingEvents = true;
+        }
+        #endregion Constructor
+
+        #region Events
+        // Define the event handlers.
+        private void OnChanged(object source, FileSystemEventArgs e)
+        {
+            // create directory Plugins e.FullPath
+            var lst = Assembly.LoadFrom(e.FullPath).GetTypes()
+                .Where(myType => myType.IsClass
+                              && !myType.IsAbstract
+                              && myType.GetInterfaces().Any(i => i == typeof(IPlugin)));
+
+            // A dll was added
+            if (e.ChangeType == WatcherChangeTypes.Created)
+            {
+                Console.WriteLine("\nLoading plugins from: " + e.FullPath);
+
+                foreach (Type type in lst)
+                {
+                    Add((IPlugin)Activator.CreateInstance(type));
+                }
+            }
+            
+            // A dll was deleted
+            if (e.ChangeType == WatcherChangeTypes.Deleted)
+            {
+                Console.WriteLine("\nRemoving plugins from: " + e.FullPath);
+
+                foreach (Type type in lst)
+                {
+                    _Plugins.Remove(_Plugins.Where(plugin => plugin.GetType().FullName == type.FullName).First());
+                    Console.WriteLine("Plugin now removed: " + type.Name);
+                }
             }
         }
+        #endregion
 
-
+        #region Methods
         /// <summary>
         /// Returns a list of all plugins. Never returns null.
         /// </summary>
@@ -56,6 +107,7 @@ namespace MyWebServer
             if (!_Plugins.Exists(x => x.GetType().Name == plugin.GetType().Name))
             {
                 _Plugins.Add(plugin);
+                Console.WriteLine("Plugin now available: " + plugin.GetType().Name);   
             }
         }
 
@@ -91,5 +143,6 @@ namespace MyWebServer
                 Plugin = i
             }).OrderBy(i => i.Value).Last().Plugin;
         }
+        #endregion Methods
     }
 }
