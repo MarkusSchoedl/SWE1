@@ -135,4 +135,20 @@ namespace MyWebServer
         {
         }
     }
+    class SqlServerNotConnectedException : Exception
+    {
+        public SqlServerNotConnectedException()
+        {
+        }
+
+        public SqlServerNotConnectedException(string message)
+        : base(message)
+        {
+        }
+
+        public SqlServerNotConnectedException(string message, Exception inner)
+        : base(message, inner)
+        {
+        }
+    }
 }

@@ -11,6 +11,7 @@ namespace Uebungen
     {
         private const string _ToLowerUrl = ToLowerPlugin._Url;
         private const string _TemeratureUrl = TempMeasurementPlugin._Url;
+        private const string _TemeratureRestUrl = TempMeasurementPlugin._RestUrl;
         private const string _NaviUrl = NavigationPlugin._Url;
 
         public void HelloWorld()
@@ -44,12 +45,12 @@ namespace Uebungen
 
         public string GetTemperatureRestUrl(DateTime from, DateTime until)
         {
-            throw new NotImplementedException();
+            return _TemeratureRestUrl + from.ToShortDateString().Replace(".", "-") + "/" + until.ToShortDateString().Replace(".", "-");
         }
 
         public string GetTemperatureUrl(DateTime from, DateTime until)
         {
-            throw new NotImplementedException();
+            return _TemeratureUrl + from.ToShortDateString().Replace(".", "-") + "/" + until.ToString().Replace(".", "-");
         }
 
         public IPlugin GetToLowerPlugin()
