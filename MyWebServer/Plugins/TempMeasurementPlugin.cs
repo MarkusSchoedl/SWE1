@@ -6,8 +6,11 @@ using BIF.SWE1.Interfaces;
 using System.Threading;
 using System.Data.SqlClient;
 using System.Data;
+using System.Data.OleDb;
+using System.Data.Odbc;
 using System.Xml.Linq;
 using System.Xml;
+
 
 namespace MyWebServer
 {
@@ -17,14 +20,12 @@ namespace MyWebServer
         public const string _Url = "/gettemperature/"; //Web
         public const string _RestUrl = "/temperature/"; //Rest
 
-        SqlConnection _Sql;
+        private string _ConnectionString = "Data Source=(local);Initial Catalog=MyWebServer; Integrated Security=SSPI;";
         #endregion Properties
 
         #region Constructor
         public TempMeasurementPlugin()
         {
-            OpenSqlConnection();
-
             new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
@@ -72,7 +73,7 @@ namespace MyWebServer
                         dates[i] = nums[2] + "-" + nums[1] + "-" + nums[0];
                     }
                 }
-                catch (ArgumentOutOfRangeException)
+                catch (IndexOutOfRangeException)
                 {
                     rsp.SetContent("<Info>The given Request was not valid</Info>");
                     return rsp;
@@ -96,7 +97,7 @@ namespace MyWebServer
             while (true)
             {
                 Random ran = new Random();
-                float x = oldTemp + (float)ran.NextDouble() * 2;
+                double x = oldTemp + ran.NextDouble() * 2;
 
                 Console.WriteLine("Adding Temperature " + x + "°C");
                 SqlInsertTemperature(x);
@@ -107,65 +108,72 @@ namespace MyWebServer
         #endregion Methods
 
         #region Database
-        private void OpenSqlConnection()
-        {
-            string connectionString = "Data Source=(local);Initial Catalog=MyWebServer;"
-                                        + "Integrated Security=SSPI;";
-            _Sql = new SqlConnection(connectionString);
-            _Sql.Open();
-        }
-
         private string SqlGetRestData(string from, string until)
         {
-            if (_Sql.State == ConnectionState.Closed || _Sql.State == ConnectionState.Broken)
+            string result = string.Empty;
+            // Datenbankverbindung öffnen
+            using (SqlConnection db = new SqlConnection(_ConnectionString))
             {
-                throw new SqlServerNotConnectedException();
+                db.Open();
+                if (db.State == ConnectionState.Closed || db.State == ConnectionState.Broken)
+                {
+                    throw new SqlServerNotConnectedException();
+                }
+                else if (db.State != ConnectionState.Open)
+                {
+                    return string.Empty;
+                }
+
+                string query = "SELECT time, temp FROM Temperature WHERE time >= @from AND time <= @until FOR XML PATH;";
+                SqlCommand cmd = new SqlCommand(query, db);
+
+                cmd.Parameters.AddWithValue("@from", from);
+                cmd.Parameters.AddWithValue("@until", until);
+
+                using (SqlDataReader rd = cmd.ExecuteReader())
+                {
+                    // Daten holen
+                    while (rd.Read())
+                    {
+                        result += rd.GetString(0);
+                    }
+                }
             }
-            else if (_Sql.State != ConnectionState.Open)
+
+            if (result != string.Empty)
             {
-                return string.Empty;
+                return result;
             }
 
-            string query = "SELECT time, temp FROM Temperature WHERE time >= @from AND time <= @until FOR XML PATH;";
-            SqlCommand cmd = new SqlCommand(query, _Sql);
-
-            cmd.Parameters.Add("@from", SqlDbType.Date);
-            cmd.Parameters["@from"].Value = from;
-
-            cmd.Parameters.Add("@until", SqlDbType.Date);
-            cmd.Parameters["@until"].Value = until;
-
-            SqlDataReader reader = cmd.ExecuteReader();
-
-            while (reader.Read())
-            {
-                return (string)(reader)[0];
-            }
-
-            return string.Empty;
+            return "<xml>INVALID REQUEST</xml>";
         }
 
-        private bool SqlInsertTemperature(float temperature)
+        private bool SqlInsertTemperature(Double temperature)
         {
-            if (_Sql.State == ConnectionState.Closed || _Sql.State == ConnectionState.Broken)
+            // Datenbankverbindung öffnen
+            using (SqlConnection db = new SqlConnection(_ConnectionString))
             {
-                throw new SqlServerNotConnectedException();
+                db.Open();
+                temperature = Math.Round(temperature, 13, MidpointRounding.AwayFromZero);
+                if (db.State == ConnectionState.Closed || db.State == ConnectionState.Broken)
+                {
+                    throw new SqlServerNotConnectedException();
+                }
+                else if (db.State != ConnectionState.Open)
+                {
+                    return false;
+                }
+
+                string query = "INSERT INTO Temperature(time, temp) VALUES (CURRENT_TIMESTAMP, @Temperature);"
+                                + "SELECT TOP 1 temp FROM Temperature ORDER BY time DESC;";
+                SqlCommand cmd = new SqlCommand(query, db);
+
+                cmd.Parameters.AddWithValue("@Temperature", temperature);
+
+                object row = cmd.ExecuteScalar();
+
+                return row.Equals(temperature) ? true : false;
             }
-            else if (_Sql.State != ConnectionState.Open)
-            {
-                return false;
-            }
-
-            string query = "INSERT INTO Temperature(time, temp) VALUES (CURRENT_TIMESTAMP, @Temperature);";
-            SqlCommand cmd = new SqlCommand(query, _Sql);
-
-            cmd.Parameters.Add("@Temperature", SqlDbType.Float);
-            cmd.Parameters["@Temperature"].Value = temperature;
-
-            Int32 rowsAffected = cmd.ExecuteNonQuery();
-            Console.WriteLine("RowsAffected: {0}", rowsAffected);
-
-            return rowsAffected > 0 ? true : false;
         }
         #endregion Database
     }

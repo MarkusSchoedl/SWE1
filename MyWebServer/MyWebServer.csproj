@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions.cs" />
+    <Compile Include="MyMutex.cs" />
     <Compile Include="PluginManager.cs" />
     <Compile Include="Plugins\NavigationPlugin.cs" />
     <Compile Include="Plugins\StaticFilesPlugin.cs" />
