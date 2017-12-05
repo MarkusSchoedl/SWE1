@@ -6,4 +6,5 @@ deploy/
 packages/
 .vs/
 *.sln
+
 !Plugins/*

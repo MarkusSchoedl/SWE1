@@ -75,7 +75,7 @@
     <None Include="my.runsettings" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Sites\test\foo.html">
+    <Content Include="static-files\test\foo.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
