@@ -53,6 +53,7 @@
     <Compile Include="MyMutex.cs" />
     <Compile Include="PluginManager.cs" />
     <Compile Include="Plugins\NavigationPlugin.cs" />
+    <Compile Include="Plugins\AttributePlugins.cs" />
     <Compile Include="Plugins\StaticFilesPlugin.cs" />
     <Compile Include="Plugins\TempMeasurementPlugin.cs" />
     <Compile Include="Plugins\TestPlugin.cs" />
@@ -72,58 +73,21 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="my.runsettings" />
-    <None Include="Sites\assets\fonts\fontawesome-webfont.eot" />
-    <None Include="Sites\assets\fonts\fontawesome-webfont.ttf" />
-    <None Include="Sites\assets\fonts\fontawesome-webfont.woff" />
-    <None Include="Sites\assets\fonts\fontawesome-webfont.woff2" />
-    <None Include="Sites\assets\fonts\FontAwesome.otf" />
-    <None Include="Sites\assets\fonts\glyphicons-halflings-regular.eot" />
-    <None Include="Sites\assets\fonts\glyphicons-halflings-regular.ttf" />
-    <None Include="Sites\assets\fonts\glyphicons-halflings-regular.woff" />
-    <None Include="Sites\assets\fonts\Roboto-Light-webfont.eot" />
-    <None Include="Sites\assets\fonts\Roboto-Light-webfont.ttf" />
-    <None Include="Sites\assets\fonts\Roboto-Light-webfont.woff" />
-    <None Include="Sites\assets\fonts\Roboto-Regular-webfont.eot" />
-    <None Include="Sites\assets\fonts\Roboto-Regular-webfont.ttf" />
-    <None Include="Sites\assets\fonts\Roboto-Regular-webfont.woff" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Sites\assets\css\bootstrap.min.css" />
-    <Content Include="Sites\assets\css\plugins.css" />
-    <Content Include="Sites\assets\css\responsive.css" />
-    <Content Include="Sites\assets\css\roboto-webfont.css" />
-    <Content Include="Sites\assets\css\style.css" />
-    <Content Include="Sites\assets\fonts\fontawesome-webfont.svg" />
-    <Content Include="Sites\assets\fonts\glyphicons-halflings-regular.svg" />
-    <Content Include="Sites\assets\fonts\Roboto-Light-webfont.svg" />
-    <Content Include="Sites\assets\fonts\Roboto-Regular-webfont.svg" />
-    <Content Include="Sites\assets\images\bg.png" />
-    <Content Include="Sites\assets\images\feature-1.jpg" />
-    <Content Include="Sites\assets\images\feature-2.jpg" />
-    <Content Include="Sites\assets\images\flaticon1.png" />
-    <Content Include="Sites\assets\images\flaticon2.png" />
-    <Content Include="Sites\assets\images\flaticon3.png" />
-    <Content Include="Sites\assets\images\flaticon4.png" />
-    <Content Include="Sites\assets\images\homebg.jpg" />
-    <Content Include="Sites\assets\images\logo.png" />
-    <Content Include="Sites\assets\images\preloading.gif" />
-    <Content Include="Sites\assets\js\main.js" />
-    <Content Include="Sites\assets\js\modernizr.js" />
-    <Content Include="Sites\assets\js\my.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Sites\assets\js\plugins.js" />
-    <Content Include="Sites\assets\js\vendor\bootstrap.min.js" />
-    <Content Include="Sites\assets\js\vendor\jquery-1.11.2.min.js" />
-    <Content Include="Sites\assets\js\vendor\modernizr-2.8.3-respond-1.4.2.min.js" />
-    <Content Include="Sites\index.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Sites\test\foo.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if not exist "$(TargetDir)Sites" mkdir "$(TargetDir)Sites";
+if not exist "$(TargetDir)Maps" mkdir "$(TargetDir)Maps";
+if not exist "$(TargetDir)Plugins" mkdir "$(TargetDir)Plugins/*";
+xcopy  /E /Y /I /R "$(SolutionDir)Sites" "$(TargetDir)Sites"
+copy "$(SolutionDir)Maps" "$(TargetDir)Maps";
+copy "$(SolutionDir)Plugins" "$(TargetDir)Plugins";</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -8,6 +8,7 @@ using BIF.SWE1.Interfaces;
 
 namespace MyWebServer
 {
+    [AttributePlugins]
     class ToLowerPlugin : IPlugin
     {
         #region Parameters

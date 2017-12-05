@@ -29,6 +29,7 @@ namespace MyWebServer
                 .SelectMany(i => Assembly.LoadFrom(i).GetTypes())
                 .Where(myType => myType.IsClass
                               && !myType.IsAbstract
+                              && myType.GetCustomAttributes(true).Any(x => x.GetType() == typeof(AttributePlugins))
                               && myType.GetInterfaces().Any(i => i == typeof(IPlugin)));
 
             foreach (Type type in lst)

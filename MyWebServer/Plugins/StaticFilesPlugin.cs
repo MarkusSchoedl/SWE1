@@ -8,6 +8,7 @@ using System.Reflection;
 
 namespace MyWebServer
 {
+    [AttributePlugins]
     class StaticFilesPlugin : IPlugin
     {
         #region Parameters

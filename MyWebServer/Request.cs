@@ -62,17 +62,14 @@ namespace MyWebServer
                 _Headers.Add(keyNvalue[0].ToLower(), keyNvalue[1]);
                 _HeaderCount++;
             }
-
-            if (reader.Peek() >= 0)
+            
+            int contentLength;
+            if (_Headers.ContainsKey("content-length") && Int32.TryParse(_Headers["content-length"], out contentLength) && contentLength > 0)
             {
-                int contentLength;
-                if (Int32.TryParse(_Headers["content-length"], out contentLength))
-                {
-                    char[] buff = new char[contentLength];
-                    reader.ReadBlock(buff, 0, contentLength);
+                char[] buff = new char[contentLength];
+                reader.ReadBlock(buff, 0, contentLength);
 
-                    _ContentBytes = Encoding.UTF8.GetBytes(buff);
-                }
+                _ContentBytes = Encoding.UTF8.GetBytes(buff);
             }
 
             if (_Headers.Count() > 0 && IsMethodValid())
@@ -169,7 +166,8 @@ namespace MyWebServer
         /// <summary>
         /// Returns the request content (body) stream or null if there is no content stream.
         /// </summary>
-        public Stream ContentStream {
+        public Stream ContentStream
+        {
             get
             {
                 return new MemoryStream(_ContentBytes);

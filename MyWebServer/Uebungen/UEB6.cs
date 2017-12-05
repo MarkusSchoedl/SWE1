@@ -50,7 +50,7 @@ namespace Uebungen
 
         public string GetTemperatureUrl(DateTime from, DateTime until)
         {
-            return _TemeratureUrl + from.ToShortDateString().Replace(".", "-") + "/" + until.ToString().Replace(".", "-");
+            return _TemeratureUrl + from.ToShortDateString().Replace(".", "-") + "/" + until.ToShortDateString().Replace(".", "-");
         }
 
         public IPlugin GetToLowerPlugin()

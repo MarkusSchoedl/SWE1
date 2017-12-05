@@ -14,6 +14,7 @@ using System.Xml;
 
 namespace MyWebServer
 {
+    [AttributePlugins]
     class TempMeasurementPlugin : IPlugin
     {
         #region Properties
@@ -51,7 +52,39 @@ namespace MyWebServer
 
         private IResponse HandleWeb(IRequest req)
         {
-            throw new NotImplementedException();
+            Response rsp = new Response(req);
+
+            string[] segments = req.Url.Segments;
+
+            string[] dates = new string[2];
+
+            //Convert date in Url to database format
+            try
+            {
+                try
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        string[] nums = segments[i + 1].Split('-');
+                        dates[i] = nums[2] + "-" + nums[1] + "-" + nums[0];
+                    }
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    rsp.SetContent("<Info>The given Request was not valid</Info>");
+                    return rsp;
+                }
+            }
+            catch (FormatException)
+            {
+                rsp.SetContent("<Info>The given Request was not valid</Info>");
+                return rsp;
+            }
+
+            rsp.ContentType = "text/html";
+            rsp.SetContent(SqlGetRestData(dates[0], dates[1]));
+
+            return rsp;
         }
 
         private IResponse HandleRest(IRequest req)
