@@ -44,8 +44,8 @@ namespace MyWebServer
                 {
                     byte[] fileBytes;
                     string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-                    string file = req.Url.Path;
+                    
+                    string file = req.Url.RawUrl;
                     if (file[0] == '/')
                     {
                         file = file.Remove(0, 1);
