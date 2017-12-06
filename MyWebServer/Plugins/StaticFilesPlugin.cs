@@ -74,7 +74,7 @@ namespace MyWebServer
             }
             catch (Exception ex)
             {
-                if (ex is FileNotFoundException || ex is DirectoryNotFoundException)
+                if (ex is FileNotFoundException)
                 {
                     Console.Write("A requested File was not found: {0}\n", req.Url.Path);
                     rsp.StatusCode = 404;
