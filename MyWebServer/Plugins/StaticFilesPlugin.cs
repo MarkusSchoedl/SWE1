@@ -34,7 +34,7 @@ namespace MyWebServer
             rsp.SetContent(LoadContentFromFile(rsp, req));
             return rsp;
         }
-        
+
         protected byte[] LoadContentFromFile(IResponse rsp, IRequest req)
         {
             // open filestream with req.Url.Path
@@ -44,9 +44,9 @@ namespace MyWebServer
                 {
                     byte[] fileBytes;
                     string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                    
+
                     string file = req.Url.Path;
-                    if (file[0] == '/' && !file.StartsWith("/deploy"))
+                    if (file[0] == '/')
                     {
                         file = file.Remove(0, 1);
                     }
@@ -58,6 +58,9 @@ namespace MyWebServer
                     }
                     else
                     {
+                        Console.WriteLine(dir);
+                        Console.WriteLine(_SiteFolder);
+                        Console.WriteLine(file);
                         full = Path.Combine(dir, _SiteFolder, file);
                     }
 
