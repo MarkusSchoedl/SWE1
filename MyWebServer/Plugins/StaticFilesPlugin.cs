@@ -58,16 +58,11 @@ namespace MyWebServer
                     }
                     else
                     {
-                        Console.WriteLine(dir);
-                        Console.WriteLine(_SiteFolder);
-                        Console.WriteLine(file);
                         full = Path.Combine(dir, _SiteFolder, file);
-                        Console.WriteLine("COMBINED: " + full);
                     }
 
                     //for jenkins...
                     full = full.Replace("Sites\\./deploy\\static-files", @"static-files");
-                    Console.WriteLine("AFTER REPLACE: " + full);
 
                     fileBytes = File.ReadAllBytes(full);
 
