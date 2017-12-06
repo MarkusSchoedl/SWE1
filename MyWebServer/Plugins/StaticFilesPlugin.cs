@@ -46,7 +46,7 @@ namespace MyWebServer
                     string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                     
                     string file = req.Url.Path;
-                    if (file[0] == '/')
+                    if (file[0] == '/' && !file.StartsWith("deploy"))
                     {
                         file = file.Remove(0, 1);
                     }
