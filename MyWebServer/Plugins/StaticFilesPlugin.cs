@@ -66,7 +66,7 @@ namespace MyWebServer
                     }
 
                     //for jenkins...
-                    full.Replace("Sites\\./deploy\\static-files", @"static-files");
+                    full = full.Replace("Sites\\./deploy\\static-files", @"static-files");
                     Console.WriteLine("AFTER REPLACE: " + full);
 
                     fileBytes = File.ReadAllBytes(full);
