@@ -68,11 +68,18 @@ namespace MyWebServer
                     return fileBytes;
                 }
             }
-            catch (FileNotFoundException)
+            catch (Exception ex)
             {
-                Console.Write("A requested File was not found: {0}\n", req.Url.Path);
-                rsp.StatusCode = 404;
+                if (ex is FileNotFoundException || ex is DirectoryNotFoundException)
+                {
+                    Console.Write("A requested File was not found: {0}\n", req.Url.Path);
+                    rsp.StatusCode = 404;
+                    return null;
+                }
+
+                throw;
             }
+
             return null;
         }
         #endregion Methods
