@@ -45,7 +45,7 @@ namespace MyWebServer
                     byte[] fileBytes;
                     string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                     
-                    string file = req.Url.RawUrl;
+                    string file = req.Url.Path;
                     if (file[0] == '/')
                     {
                         file = file.Remove(0, 1);
@@ -60,6 +60,10 @@ namespace MyWebServer
                     {
                         full = Path.Combine(dir, _SiteFolder, file);
                     }
+
+                    //for jenkins...
+                    full.Replace(@"deploy\Sites\deploy\static-files", @"deploy\Sites");
+
                     fileBytes = File.ReadAllBytes(full);
 
                     rsp.ContentType = "text/" + Path.GetExtension(full).Replace(".", "");
