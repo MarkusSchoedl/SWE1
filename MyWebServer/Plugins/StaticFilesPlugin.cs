@@ -62,6 +62,7 @@ namespace MyWebServer
                         Console.WriteLine(_SiteFolder);
                         Console.WriteLine(file);
                         full = Path.Combine(dir, _SiteFolder, file);
+                        Console.WriteLine("COMBINED: " + full);
                     }
 
                     //for jenkins...
