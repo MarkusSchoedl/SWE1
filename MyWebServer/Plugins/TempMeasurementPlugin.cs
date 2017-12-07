@@ -14,17 +14,28 @@ using System.Xml;
 
 namespace MyWebServer
 {
+    /// <summary>
+    /// A plugin that stores a Temperature and Date+Time in a DB.
+    /// Lets you read all of the Temperature Data in a specified timespan as XML format.<para/>
+    /// Also reads a Temperature sensor in the background and stores the Data in the DB.
+    /// </summary>
     [AttributePlugins]
     class TempMeasurementPlugin : IPlugin
     {
-        #region Properties
+        #region Fields
+        /// <summary>The string how the URL has to start with we use in the Browser.</summary>
         public const string _Url = "/gettemperature/"; //Web
+        /// <summary>The string how the REST URL has to start with.</summary>
         public const string _RestUrl = "/temperature/"; //Rest
 
         private string _ConnectionString = "Data Source=(local);Initial Catalog=MyWebServer; Integrated Security=SSPI;";
-        #endregion Properties
+        #endregion Fields
 
         #region Constructor
+        /// <summary>
+        /// Creates a new instance of the <see cref="TempMeasurementPlugin"/> class.
+        /// Starts a thread in to read the Temperature Sensor. 
+        /// </summary>
         public TempMeasurementPlugin()
         {
             new Thread(() =>
@@ -36,6 +47,12 @@ namespace MyWebServer
         #endregion Constructor
 
         #region Methods
+        /// <summary>
+        /// Returns how much the plugin wants to handle the request.
+        /// If Request-URL starts with <seealso cref="_Url"/> or <seealso cref="_RestUrl"/>, the Plugin wants to handle the request. 
+        /// </summary>
+        /// <param name="req">The request the Browser/Client sent to us.</param>
+        /// <returns>A floating point number greater than 0 and smaller or equal to 1.</returns>
         public float CanHandle(IRequest req)
         {
             if (req.Url.RawUrl.StartsWith(_Url) || req.Url.RawUrl.StartsWith(_RestUrl))
@@ -45,6 +62,13 @@ namespace MyWebServer
             return 0.1f;
         }
 
+        /// <summary>
+        /// Depending on the Request-URL the plugin decides if the client gets REST Data or HTML Data containing the Temperature Data.
+        /// </summary>
+        /// <param name="req">The request the Browser/Client sent to us.</param>
+        /// <returns>
+        /// A response which just needs to be sent. The content of the response is either XML or HTML containing the Temperature Data.
+        /// </returns>
         public IResponse Handle(IRequest req)
         {
             return req.Url.RawUrl.StartsWith(_RestUrl) ? HandleRest(req) : HandleWeb(req);

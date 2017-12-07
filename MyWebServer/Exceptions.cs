@@ -5,6 +5,9 @@ using System.Text;
 
 namespace MyWebServer
 {
+    /// <summary>
+    /// This Exception is thrown wenn no Status Code was set.
+    /// </summary>
     class HTTPStatusCodeNotSetException : Exception
     {
         public HTTPStatusCodeNotSetException()
@@ -22,6 +25,9 @@ namespace MyWebServer
         }
     }
 
+    /// <summary>
+    /// This Exception is thrown if we received an request with an NullOrEmpty stream.
+    /// </summary>
     class RequestStreamNullOrEmptyException : Exception
     {
         public RequestStreamNullOrEmptyException()
@@ -39,6 +45,9 @@ namespace MyWebServer
         }
     }
 
+    /// <summary>
+    /// This Exception is thrown if the network is not writeable (Usually in Response).
+    /// </summary>
     class NetworkNotWriteableException : Exception
     {
         public NetworkNotWriteableException()
@@ -55,6 +64,10 @@ namespace MyWebServer
         {
         }
     }
+
+    /// <summary>
+    /// This Exception is thrown if the content of the Response couldnt be set.
+    /// </summary>
     class ContentNotSetException : Exception
     {
         public ContentNotSetException()
@@ -71,6 +84,10 @@ namespace MyWebServer
         {
         }
     }
+
+    /// <summary>
+    /// This Exeption is thrown if the Request was not set at all.
+    /// </summary>
     class RequestNotSetException : Exception
     {
         public RequestNotSetException()
@@ -87,6 +104,10 @@ namespace MyWebServer
         {
         }
     }
+
+    /// <summary>
+    /// This Exception is thrown if no Content was set in the Request.
+    /// </summary>
     class NoContentSetException : Exception
     {
         public NoContentSetException()
@@ -103,6 +124,10 @@ namespace MyWebServer
         {
         }
     }
+
+    /// <summary>
+    /// This Exception is thrown if the received Content-Length couldnt be converted to Int.
+    /// </summary>
     class CouldntConvertContentLengthException : Exception
     {
         public CouldntConvertContentLengthException()
@@ -119,6 +144,10 @@ namespace MyWebServer
         {
         }
     }
+
+    /// <summary>
+    /// This Exception is thrown if someone wanted to set Add a plugin in the <seealso cref="PluginManager"/> which is not available.
+    /// </summary>
     class CouldntFindPluginNameException : Exception
     {
         public CouldntFindPluginNameException()
@@ -135,6 +164,10 @@ namespace MyWebServer
         {
         }
     }
+
+    /// <summary>
+    /// This Exception is thrown if we are not connected to the MSSQL Server but want to set off commands.
+    /// </summary>
     class SqlServerNotConnectedException : Exception
     {
         public SqlServerNotConnectedException()

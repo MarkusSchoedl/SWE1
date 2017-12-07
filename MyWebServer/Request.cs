@@ -7,9 +7,12 @@ using BIF.SWE1.Interfaces;
 
 namespace MyWebServer
 {
+    /// <summary>
+    /// Represents a Request by the Client.
+    /// </summary>
     public class Request : IRequest
     {
-        #region Parameters
+        #region Fields
         private Dictionary<string, string> _Headers;
         private string _Method;
         private bool _IsValid;
@@ -20,9 +23,13 @@ namespace MyWebServer
         private Byte[] _ContentBytes;
 
         private static readonly string[] _ValidOnes = { "GET", "POST", "HEAD", "PUT", "PATCH", "DELETE", "TRACE", "OPTIONS", "CONNECT" };
-        #endregion Parameters
+        #endregion Fields
 
         #region Constructor
+        /// <summary>
+        /// Initializes a new <see cref="Request"/> and parses all the data from the <paramref name="stream"/>.
+        /// </summary>
+        /// <param name="stream">The networkstream to the Client.</param>
         public Request(System.IO.Stream stream)
         {
             _Headers = new Dictionary<string, string>();
@@ -79,7 +86,7 @@ namespace MyWebServer
         }
         #endregion
 
-        #region SettersGetters
+        #region Properties
         protected bool IsMethodValid()
         {
             return _ValidOnes.Contains(_Method.ToUpper());
@@ -196,6 +203,6 @@ namespace MyWebServer
                 return _ContentBytes;
             }
         }
-        #endregion
+        #endregion Properties
     }
 }

@@ -11,21 +11,31 @@ using System.Web;
 
 namespace MyWebServer
 {
+    /// <summary>
+    /// <para>Reads one or more OSM Maps and can give you all cities for a certain street.</para>
+    /// </summary>
     [AttributePlugins]
     class NavigationPlugin : IPlugin
     {
-        #region Properties
+        #region Fields
         private Dictionary<string, List<string>> _WholeMap;
 
         private MyMutex _ObjMutex = new MyMutex();
-
+        
+        /// <summary>
+        /// The exact url which you can call the navigation plugin on.
+        /// If you add anything after those characters, the plugin doesnt want to handle the request.
+        /// </summary>
         public const string _Url = "/navigation";
 
         private static string _OsmSubDir = "Maps";
         private static string _OsmPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _OsmSubDir);
-        #endregion Properties
+        #endregion Fields
 
         #region Constructor
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NavigationPlugin"/> class
+        /// </summary>
         public NavigationPlugin()
         {
             Directory.CreateDirectory(_OsmPath);
@@ -33,15 +43,26 @@ namespace MyWebServer
         #endregion Constructor
 
         #region Methods
+        /// <summary>
+        /// Returns how much the plugin wants to handle the request.
+        /// </summary>
+        /// <param name="req">The request the Browser/Client sent to us.</param>
+        /// <returns>A floating point number greater than 0 and smaller or equal to 1.</returns>
         public float CanHandle(IRequest req)
         {
-            if (req.Url.RawUrl.StartsWith(_Url))
+            if (req.Url.RawUrl == _Url)
             {
                 return 1.0f;
             }
             return 0.1f;
         }
 
+        /// <summary>
+        /// Handles a request and generates an appropiate response. <para/>
+        /// Important: The street to search for has to be set in the content using: <code>"street=" + [TOSEARCH]</code>
+        /// </summary>
+        /// <param name="req">The request the Browser/Client sent to us.</param>
+        /// <returns>A response which just needs to be sent.</returns>
         public IResponse Handle(IRequest req)
         {
             var rsp = new Response(req);

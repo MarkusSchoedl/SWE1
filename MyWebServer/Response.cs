@@ -8,9 +8,13 @@ using System.Reflection;
 
 namespace MyWebServer
 {
+
+    /// <summary>
+    /// Represents a Response to the client.
+    /// </summary>
     public class Response : IResponse
     {
-        #region Parameters
+        #region Fields
         private Dictionary<int, string> _HTTP_Statuscodes;
 
         private Dictionary<string, string> _Headers;
@@ -21,9 +25,12 @@ namespace MyWebServer
         private String _DefaultServer = "BIF-SWE1-Server";
 
         private Encoding _Encoder = Encoding.UTF8;
-        #endregion
+        #endregion Fields
 
         #region Constructor
+        /// <summary>
+        /// Creates a new Instance of the <see cref="Response"/> Class and sets the default values.
+        /// </summary>
         public Response()
         {
             _Headers = new Dictionary<string, string>();
@@ -32,6 +39,10 @@ namespace MyWebServer
             AddHeader("Server", _DefaultServer);
         }
 
+        /// <summary>
+        /// Creates a new Instance of the <see cref="Response"/> Class and parses all values from the stream which could be relevant later.
+        /// </summary>
+        /// <param name="req">The request we got from the Client</param>
         public Response(IRequest req)
         {
             if (req.Url == null)
@@ -57,7 +68,7 @@ namespace MyWebServer
         }
         #endregion
 
-        #region SettersGetters
+        #region Properties
         /// <summary>
         /// Returns a writable dictionary of the response headers. Never returns null.
         /// </summary>
@@ -97,6 +108,7 @@ namespace MyWebServer
         /// <summary>
         /// Gets or sets the current status code. An Exceptions is thrown, if no status code was set.
         /// </summary>
+        /// <exception cref="HTTPStatusCodeNotSetException">No Status Code was set</exception>
         public int StatusCode
         {
             get
@@ -119,6 +131,7 @@ namespace MyWebServer
         /// <summary>
         /// Returns the status code as string. (200 OK)
         /// </summary>
+        /// <exception cref="HTTPStatusCodeNotSetException">No Status Code was set</exception>
         public string Status
         {
             get
@@ -199,6 +212,9 @@ namespace MyWebServer
         /// Sends the response to the network stream.
         /// </summary>
         /// <param name="network"></param>
+        /// <exception cref="RequestNotSetException">The Request was Null. <seealso cref="ArgumentNullException"/></exception>
+        /// <exception cref="NoContentSetException">If no content was set for the response</exception>
+        /// <exception cref="NetworkNotWriteableException">The network was suddenly not writeable anymore</exception>
         public void Send(Stream network)
         {
             if (_Response == null)
@@ -268,6 +284,6 @@ namespace MyWebServer
             _HTTP_Statuscodes.Add(502, "Bad Gateway");
             _HTTP_Statuscodes.Add(503, "Service Unavailable");
         }
-        #endregion
+        #endregion Properties
     }
 }

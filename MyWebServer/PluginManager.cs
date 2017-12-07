@@ -11,20 +11,31 @@ using BIF.SWE1.Interfaces;
 
 namespace MyWebServer
 {
+    /// <summary>
+    /// Exposes Methods for managing all Plugins.
+    /// Contains a Listener which dynamically adds Plugins during runtime.
+    /// You just need to copy a Plugin.dll file into the /Plugins folder!
+    /// </summary>
     class PluginManager : IPluginManager
     {
-        #region Parameters
-        List<IPlugin> _Plugins = new List<IPlugin>();
-        FileSystemWatcher _DirWatcher = new FileSystemWatcher(_ExecutionLocation, "*.dll");
+        #region Fields
+        private List<IPlugin> _Plugins = new List<IPlugin>();
+        private FileSystemWatcher _DirWatcher = new FileSystemWatcher(_ExecutionLocation, "*.dll");
 
-        static string _ExecutionLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        #endregion Parameters
+        private static string _PluginFolder = "Plugins";
+        private static string _ExecutionLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        #endregion Fields
 
         #region Constructor
+        /// <summary>
+        /// Creates a new instance of the <see cref="PluginManager"/> class.
+        /// Also starts a FileSystemWatcher to the Directory /Plugins
+        /// </summary>
         public PluginManager()
         {
             // create directory Plugins
             var lst = Directory.GetFiles(_ExecutionLocation)
+                .Concat(Directory.GetFiles(Path.Combine(_ExecutionLocation, _PluginFolder)))
                 .Where(i => new[] { ".dll", ".exe" }.Contains(Path.GetExtension(i)))
                 .SelectMany(i => Assembly.LoadFrom(i).GetTypes())
                 .Where(myType => myType.IsClass
@@ -51,41 +62,6 @@ namespace MyWebServer
         }
         #endregion Constructor
 
-        #region Events
-        // Define the event handlers.
-        private void OnChanged(object source, FileSystemEventArgs e)
-        {
-            // create directory Plugins e.FullPath
-            var lst = Assembly.LoadFrom(e.FullPath).GetTypes()
-                .Where(myType => myType.IsClass
-                              && !myType.IsAbstract
-                              && myType.GetInterfaces().Any(i => i == typeof(IPlugin)));
-
-            // A dll was added
-            if (e.ChangeType == WatcherChangeTypes.Created)
-            {
-                Console.WriteLine("\nLoading plugins from: " + e.FullPath);
-
-                foreach (Type type in lst)
-                {
-                    Add((IPlugin)Activator.CreateInstance(type));
-                }
-            }
-            
-            // A dll was deleted
-            if (e.ChangeType == WatcherChangeTypes.Deleted)
-            {
-                Console.WriteLine("\nRemoving plugins from: " + e.FullPath);
-
-                foreach (Type type in lst)
-                {
-                    _Plugins.Remove(_Plugins.Where(plugin => plugin.GetType().FullName == type.FullName).First());
-                    Console.WriteLine("Plugin now removed: " + type.Name);
-                }
-            }
-        }
-        #endregion
-
         #region Methods
         /// <summary>
         /// Returns a list of all plugins. Never returns null.
@@ -101,7 +77,7 @@ namespace MyWebServer
         /// <summary>
         /// Adds a new plugin. If the plugin was already added, nothing will happen.
         /// </summary>
-        /// <param name="plugin"></param>
+        /// <param name="plugin">The Plugin to add</param>
         public void Add(IPlugin plugin)
         {
             //Check if the class name of the object was not loaded yet
@@ -145,5 +121,40 @@ namespace MyWebServer
             }).OrderBy(i => i.Value).Last().Plugin;
         }
         #endregion Methods
+
+        #region Events
+        // Define the event handlers.
+        private void OnChanged(object source, FileSystemEventArgs e)
+        {
+            // create directory Plugins e.FullPath
+            var lst = Assembly.LoadFrom(e.FullPath).GetTypes()
+                .Where(myType => myType.IsClass
+                              && !myType.IsAbstract
+                              && myType.GetInterfaces().Any(i => i == typeof(IPlugin)));
+
+            // A dll was added
+            if (e.ChangeType == WatcherChangeTypes.Created)
+            {
+                Console.WriteLine("\nLoading plugins from: " + e.FullPath);
+
+                foreach (Type type in lst)
+                {
+                    Add((IPlugin)Activator.CreateInstance(type));
+                }
+            }
+
+            // A dll was deleted
+            if (e.ChangeType == WatcherChangeTypes.Deleted)
+            {
+                Console.WriteLine("\nRemoving plugins from: " + e.FullPath);
+
+                foreach (Type type in lst)
+                {
+                    _Plugins.Remove(_Plugins.Where(plugin => plugin.GetType().FullName == type.FullName).First());
+                    Console.WriteLine("Plugin now removed: " + type.Name);
+                }
+            }
+        }
+        #endregion
     }
 }

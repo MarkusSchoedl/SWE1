@@ -8,22 +8,34 @@ using BIF.SWE1.Interfaces;
 
 namespace MyWebServer
 {
+    /// <summary>
+    /// This plugin receives a text in the Request Content and makes it lowercase.
+    /// This text is sent back to the client, in the Response content of course.
+    /// </summary>
     [AttributePlugins]
     class ToLowerPlugin : IPlugin
     {
-        #region Parameters
+        #region Fields
         public const string _Url = "/to-lower";
         private static string _EmptyMessage = "Bitte geben Sie einen Text ein";
-        #endregion Parameters
+        #endregion Fields
 
-        #region SettersGetters
+        #region Properties
+        /// <summary>
+        /// The url you have to enter to communicate with this plugin.
+        /// </summary>
         public string Url
         {
             get { return _Url; }
         }
-        #endregion SettersGetters
+        #endregion Properties
 
         #region Methods
+        /// <summary>
+        /// Returns how much the plugin wants to handle the request.
+        /// </summary>
+        /// <param name="req">The request the Browser/Client sent to us.</param>
+        /// <returns>A floating point number greater than 0 and smaller or equal to 1.</returns>
         public float CanHandle(IRequest req)
         {
             if(req.Url.RawUrl == _Url)
@@ -33,6 +45,12 @@ namespace MyWebServer
             return 0.1f;
         }
 
+        /// <summary>
+        /// Handles a request and generates an appropiate response. <para/>
+        /// Important: The text to lower for has to be set in the content using: <code>"text=" + [TOLOWERTEXT]</code>
+        /// </summary>
+        /// <param name="req">The request the Browser/Client sent to us.</param>
+        /// <returns>A response which just needs to be sent.</returns>
         public IResponse Handle(IRequest req)
         {
             var rsp = new Response(req);
@@ -51,6 +69,8 @@ namespace MyWebServer
             {
                 rsp.SetContent(req.ContentString + _EmptyMessage);
             }
+
+            rsp.ContentType = "text/html";
 
             return rsp;
         }

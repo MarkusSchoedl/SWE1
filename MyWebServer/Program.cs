@@ -10,10 +10,13 @@ using System.Threading;
 
 namespace MyWebServer
 {
+    /// <summary>
+    /// The WebServer Program
+    /// </summary>
     class Program
     {
-        static PluginManager pluginManager = new PluginManager();
-
+        private static PluginManager pluginManager = new PluginManager();
+        
         static void Main(string[] args)
         {
             TcpListener server = null;

@@ -34,9 +34,11 @@ namespace MyWebServer
 
         /// <summary>
         /// Called by the server when the plugin should handle the request.
-        /// </summary>
-        /// <param name="req"></param>
-        /// <returns>A new response object.</returns>
+        /// </summary>        
+        /// <param name="req">The request the Browser/Client sent to us.</param>
+        /// <returns>
+        /// A response which just needs to be sent. The content of the response is the content of the file requested.
+        /// </returns>
         public IResponse Handle(IRequest req)
         {
             Response rsp = (Response)new StaticFilesPlugin().Handle(req);
