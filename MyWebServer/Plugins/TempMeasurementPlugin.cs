@@ -292,7 +292,7 @@ namespace MyWebServer
                 string query =
                       "SELECT time, temp "
                     + "FROM("
-                        + "SELECT time, temp, ROW_NUMBER() OVER(ORDER BY ID) AS RowNum"
+                        + "SELECT time, temp, ROW_NUMBER() OVER(ORDER BY time) AS RowNum"
                         + "FROM Temperature"
                         + "WHERE time >= @from AND time <= @until"
                     + ") AS MyDerivedTable"
@@ -325,7 +325,7 @@ namespace MyWebServer
                 return result;
             }
 
-            return "<ul><li>INVALID REQUEST</ul></li>";
+            return "<ul><li>This Page is empty.</ul></li>";
         }
         #endregion Database
     }

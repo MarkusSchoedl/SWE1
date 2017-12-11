@@ -118,7 +118,7 @@ namespace MyWebServer
                 {
                     if (_WholeMap.ContainsKey(searchStreet.ToLower()))
                     {
-                        result = _WholeMap[searchStreet];
+                        result = _WholeMap[searchStreet.ToLower()];
                     }
                 }
                 else
