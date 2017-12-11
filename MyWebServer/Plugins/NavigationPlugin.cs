@@ -24,7 +24,7 @@ namespace MyWebServer
         
         /// <summary>
         /// The exact url which you can call the navigation plugin on.
-        /// If you add anything after those characters, the plugin doesnt want to handle the request.
+        /// You might add "?test=1" after the end of it so you get a testresult without parsing an OSM Map.
         /// </summary>
         public const string _Url = "/navigation";
 
@@ -50,7 +50,7 @@ namespace MyWebServer
         /// <returns>A floating point number greater than 0 and smaller or equal to 1.</returns>
         public float CanHandle(IRequest req)
         {
-            if (req.Url.RawUrl == _Url)
+            if (req.Url.Path == _Url)
             {
                 return 1.0f;
             }
@@ -81,6 +81,15 @@ namespace MyWebServer
 
                     searchStreet = HttpUtility.UrlDecode(req.ContentString.Substring(7));
                 }
+            }
+
+            // For testing the plugin without database connection
+            if (req.Url.ParameterCount > 0 && req.Url.Parameter.Contains(new KeyValuePair<string, string>("test", "1")))
+            {
+                rsp.StatusCode = 200;
+                rsp.SetContent("<div><ul><li>This is Test-Data</li><li>3 Orte gefunden</li><li>Wien</li><li>Klosterneuburg</li><li>Wiener Neustadt</li></ul></div>");
+                rsp.ContentType = "text/xml";
+                return rsp;
             }
 
             //Check if able to Lock!

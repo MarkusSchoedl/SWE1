@@ -30,7 +30,7 @@ namespace Uebungen
 
         public string GetNaviUrl()
         {
-            return _NaviUrl;
+            return _NaviUrl + "?test=1";
         }
 
         public IPlugin GetNavigationPlugin()
@@ -45,12 +45,12 @@ namespace Uebungen
 
         public string GetTemperatureRestUrl(DateTime from, DateTime until)
         {
-            return _TemeratureRestUrl + from.ToShortDateString().Replace(".", "-") + "/" + until.ToShortDateString().Replace(".", "-");
+            return _TemeratureRestUrl + from.ToShortDateString().Replace(".", "-") + "/" + until.ToShortDateString().Replace(".", "-") + "?test=1";
         }
 
         public string GetTemperatureUrl(DateTime from, DateTime until)
         {
-            return _TemeratureUrl + from.ToShortDateString().Replace(".", "-") + "/" + until.ToShortDateString().Replace(".", "-");
+            return _TemeratureUrl + from.ToShortDateString().Replace(".", "-") + "/" + until.ToShortDateString().Replace(".", "-") + "?test=1";
         }
 
         public IPlugin GetToLowerPlugin()

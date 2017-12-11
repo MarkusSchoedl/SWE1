@@ -38,7 +38,7 @@ namespace MyWebServer
         /// <returns>A floating point number greater than 0 and smaller or equal to 1.</returns>
         public float CanHandle(IRequest req)
         {
-            if(req.Url.RawUrl == _Url)
+            if(req.Url.Path == _Url)
             {
                 return 1.0f;
             }

@@ -55,7 +55,7 @@ namespace MyWebServer
         /// <returns>A floating point number greater than 0 and smaller or equal to 1.</returns>
         public float CanHandle(IRequest req)
         {
-            if (req.Url.RawUrl.StartsWith(_Url) || req.Url.RawUrl.StartsWith(_RestUrl))
+            if (req.Url.Path.StartsWith(_Url) || req.Url.Path.StartsWith(_RestUrl))
             {
                 return 1.0f;
             }
@@ -65,18 +65,31 @@ namespace MyWebServer
         /// <summary>
         /// Depending on the Request-URL the plugin decides if the client gets REST Data or HTML Data containing the Temperature Data.
         /// </summary>
-        /// <param name="req">The request the Browser/Client sent to us.</param>
+        /// <param name="req">
+        /// The request the Browser/Client sent to us.
+        /// Adding "?test=1" at the end of the URL returns a test-response without accessing the database.
+        /// </param>
         /// <returns>
         /// A response which just needs to be sent. The content of the response is either XML or HTML containing the Temperature Data.
         /// </returns>
         public IResponse Handle(IRequest req)
         {
-            return req.Url.RawUrl.StartsWith(_RestUrl) ? HandleRest(req) : HandleWeb(req);
+            // For testing the plugin without database connection
+            if (req.Url.ParameterCount > 0 && req.Url.Parameter.Contains(new KeyValuePair<string, string>("test", "1")))
+            {
+                Response rsp = new Response(req);
+                rsp.StatusCode = 200;
+                rsp.SetContent("<row><time>2017-12-11T13:14:36.093</time><temp>2.118251151926000e+001</temp></row><row><time>2017-12-11T13:14:36.087</time><temp>2.046490146520780e+001</temp></row><row><time>2017-12-11T13:14:36.073</time><temp>2.174729141115550e+001</temp></row>");
+                rsp.ContentType = req.Url.Path.StartsWith(_RestUrl) ? "text/xml" : "text/html";
+                return rsp;
+            }
+            return req.Url.Path.StartsWith(_RestUrl) ? HandleRest(req) : HandleWeb(req);
         }
 
         private IResponse HandleWeb(IRequest req)
         {
             Response rsp = new Response(req);
+            rsp.StatusCode = 400;
 
             string[] segments = req.Url.Segments;
 
@@ -105,8 +118,24 @@ namespace MyWebServer
                 return rsp;
             }
 
+            int page = 0;
+            // Check if a page was set correctly
+            if (req.HeaderCount > 0 && req.Headers.ContainsKey("page") && string.IsNullOrEmpty(req.Headers["page"]))
+            {
+                if (!Int32.TryParse(req.Headers["page"], out page))
+                {
+                    page = 1;
+                }
+            }
+            else
+            {
+                page = 1;
+            }
+
+            
+            rsp.StatusCode = 200;
             rsp.ContentType = "text/html";
-            rsp.SetContent(SqlGetRestData(dates[0], dates[1]));
+            rsp.SetContent(SqlGetHTMLData(dates[0], dates[1], page));
 
             return rsp;
         }
@@ -114,6 +143,7 @@ namespace MyWebServer
         private IResponse HandleRest(IRequest req)
         {
             Response rsp = new Response(req);
+            rsp.StatusCode = 400;
 
             string[] segments = req.Url.Segments;
 
@@ -142,6 +172,7 @@ namespace MyWebServer
                 return rsp;
             }
 
+            rsp.StatusCode = 200;
             rsp.ContentType = "text/xml";
             rsp.SetContent(SqlGetRestData(dates[0], dates[1]));
 
@@ -231,6 +262,70 @@ namespace MyWebServer
 
                 return row.Equals(temperature) ? true : false;
             }
+        }
+
+        private string SqlGetHTMLData(string from, string until, int page)
+        {
+            if(page <= 0)
+            {
+                throw new Exception("Page cannot be zero or negative");
+            }
+
+            string result = string.Empty;
+            // Datenbankverbindung öffnen
+            using (SqlConnection db = new SqlConnection(_ConnectionString))
+            {
+                db.Open();
+                if (db.State == ConnectionState.Closed || db.State == ConnectionState.Broken)
+                {
+                    throw new SqlServerNotConnectedException();
+                }
+                else if (db.State != ConnectionState.Open)
+                {
+                    return string.Empty;
+                }
+
+                int rowFrom, rowTo;
+                rowFrom = 10 * (page - 1) + 1; // 1, 11, 21, 41
+                rowTo = 10 * (page); // 10, 20, 30, 40
+
+                string query =
+                      "SELECT time, temp "
+                    + "FROM("
+                        + "SELECT time, temp, ROW_NUMBER() OVER(ORDER BY ID) AS RowNum"
+                        + "FROM Temperature"
+                        + "WHERE time >= @from AND time <= @until"
+                    + ") AS MyDerivedTable"
+                    + "WHERE MyDerivedTable.RowNum BETWEEN @startRow AND @endRow"
+                    + "FOR XML PATH";
+
+                SqlCommand cmd = new SqlCommand(query, db);
+
+                cmd.Parameters.AddWithValue("@from", from);
+                cmd.Parameters.AddWithValue("@until", until);
+                cmd.Parameters.AddWithValue("@startRow", rowFrom);
+                cmd.Parameters.AddWithValue("@endRow", rowTo);
+
+                using (SqlDataReader rd = cmd.ExecuteReader())
+                {
+                    // Daten holen
+                    while (rd.Read())
+                    {
+                        result += rd.GetString(0);
+                    }
+                }
+            }
+
+            if (result != string.Empty)
+            {
+                result = "<table><tr><th>Time</th><th>Temp</th></tr>" + result + "</table>";
+                result.Replace("row", "tr");
+                result.Replace("time", "td");
+                result.Replace("temp", "td");
+                return result;
+            }
+
+            return "<ul><li>INVALID REQUEST</ul></li>";
         }
         #endregion Database
     }
