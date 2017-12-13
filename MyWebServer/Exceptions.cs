@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Runtime;
 
-namespace MyWebServer
+/// <summary>
+/// This namespace contains all the custom exceptions.MyWebServer.MyExceptions
+/// </summary>
+namespace MyWebServer.MyExceptions
 {
     /// <summary>
     /// This Exception is thrown wenn no Status Code was set.

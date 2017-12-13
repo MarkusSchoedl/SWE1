@@ -5,6 +5,8 @@ using System.Text;
 using System.IO;
 using System.Reflection;
 using System.Security.Permissions;
+using  MyWebServer.MyExceptions;
+using MyWebServer.Plugins;
 
 using BIF.SWE1.Interfaces;
 

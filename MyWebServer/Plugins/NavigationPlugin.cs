@@ -9,7 +9,7 @@ using System.Threading;
 using System.Xml.Linq;
 using System.Web;
 
-namespace MyWebServer
+namespace MyWebServer.Plugins
 {
     /// <summary>
     /// <para>Reads one or more OSM Maps and can give you all cities for a certain street.</para>
@@ -18,10 +18,13 @@ namespace MyWebServer
     class NavigationPlugin : IPlugin
     {
         #region Fields
+        // key: city, value: streets ... Streets are stored ToLower !
         private Dictionary<string, List<string>> _WholeMap;
+        private Dictionary<string, List<string>> _NewMap;
 
-        private MyMutex _ObjMutex = new MyMutex();
-        
+        private MyMutex _ReadingMutex = new MyMutex();
+        private Object _CopyLock = new Object();
+
         /// <summary>
         /// The exact url which you can call the navigation plugin on.
         /// You might add "?test=1" after the end of it so you get a testresult without parsing an OSM Map.
@@ -69,38 +72,56 @@ namespace MyWebServer
             rsp.StatusCode = 200;
 
             string searchStreet = string.Empty;
-            if (req.Headers.ContainsKey("content-length"))
-            {
-                if (req.ContentLength > 0)
-                {
-                    if (req.ContentLength <= 7)
-                    {
-                        rsp.SetContent("Bitte geben Sie eine Anfrage ein");
-                        return rsp;
-                    }
 
-                    searchStreet = HttpUtility.UrlDecode(req.ContentString.Substring(7));
+            // Parse the Street out of the content
+            {
+                if (req.Headers.ContainsKey("content-length"))
+                {
+                    if (req.ContentLength > 0)
+                    {
+                        if (req.ContentLength <= 7)
+                        {
+                            rsp.SetContent("Bitte geben Sie eine Anfrage ein");
+                            return rsp;
+                        }
+
+                        searchStreet = HttpUtility.UrlDecode(req.ContentString.Substring(7));
+                    }
+                }
+
+                // For testing the plugin without database connection
+                if (req.Url.ParameterCount > 0 && req.Url.Parameter.Contains(new KeyValuePair<string, string>("test", "1")))
+                {
+                    rsp.StatusCode = 200;
+                    rsp.SetContent("<div><ul><li>This is Test-Data</li><li>3 Orte gefunden</li><li>Wien</li><li>Klosterneuburg</li><li>Wiener Neustadt</li></ul></div>");
+                    rsp.ContentType = "text/xml";
+                    return rsp;
                 }
             }
 
-            // For testing the plugin without database connection
-            if (req.Url.ParameterCount > 0 && req.Url.Parameter.Contains(new KeyValuePair<string, string>("test", "1")))
+            List<string> result = new List<string>();
+
+            //Check if we have a map parsed to read from
+            if (_WholeMap != null)
             {
-                rsp.StatusCode = 200;
-                rsp.SetContent("<div><ul><li>This is Test-Data</li><li>3 Orte gefunden</li><li>Wien</li><li>Klosterneuburg</li><li>Wiener Neustadt</li></ul></div>");
-                rsp.ContentType = "text/xml";
-                return rsp;
+                lock (_CopyLock)
+                {
+                    if (_WholeMap.ContainsKey(searchStreet.ToLower()))
+                    {
+                        result = _WholeMap[searchStreet.ToLower()];
+                    }
+                }
             }
 
-            //Check if able to Lock!
-            if (_ObjMutex.TryWait())
+            // Have to parse from the OSM directly
+            if (_ReadingMutex.TryWait()) // if TryWait fails, the plugin parses a map at the moment
             {
                 //Requested an update
                 if (req.Url.ParameterCount == 1 && req.Url.Parameter.ContainsKey("Update")
                 && req.Url.Parameter["Update"] == "true")
                 {
                     List<string> res = ReadWholeFile(saveAll: true);
-                    _ObjMutex.Release();
+                    _ReadingMutex.Release();
 
                     XElement xmlEles = new XElement("div", "Erfolgreiches Update");
                     if (res != null && res.Count > 0)
@@ -111,39 +132,32 @@ namespace MyWebServer
                     return rsp;
                 }
 
-                // Requested a Read
-                List<string> result = new List<string>();
-
-                if (_WholeMap != null)
-                {
-                    if (_WholeMap.ContainsKey(searchStreet.ToLower()))
-                    {
-                        result = _WholeMap[searchStreet.ToLower()];
-                    }
-                }
-                else
+                // Just want a street
+                else if (_WholeMap == null)
                 {
                     result = ReadWholeFile(searchStreet: searchStreet);
                 }
-
-                XElement xmlElements = new XElement("div", result.Count + " Orte gefunden");
-                if (result.Count > 0)
-                {
-                    xmlElements.Add(new XElement("ul", result.Select(i => new XElement("li", i))));
-                }
-                rsp.SetContent(xmlElements.ToString());
-
-                _ObjMutex.Release();
-
-                return rsp;
             }
 
-            // Couldnt lock
+            // We are parsing maps now.
             else
             {
-                rsp.SetContent("Das NavigationPlugin wird zurzeit verwendet. Bitte versuchen Sie es später noch einmal.");
+                rsp.SetContent("Das NavigationPlugin kann diese Funktion zurzeit nicht ausführen, sie wird bereits benutzt. Bitte versuchen Sie es später noch einmal.");
                 return rsp;
             }
+
+            // All went good and we got data
+
+            XElement xmlElements = new XElement("div", result.Count + " Orte gefunden");
+            if (result.Count > 0)
+            {
+                xmlElements.Add(new XElement("ul", result.Select(i => new XElement("li", i))));
+            }
+            rsp.SetContent(xmlElements.ToString());
+
+            _ReadingMutex.Release();
+
+            return rsp;
         }
         #endregion Methods
 
@@ -152,11 +166,11 @@ namespace MyWebServer
         {
             if (saveAll)
             {
-                if (_WholeMap == null)
+                if (_NewMap == null)
                 {
-                    _WholeMap = new Dictionary<string, List<string>>();
+                    _NewMap = new Dictionary<string, List<string>>();
                 }
-                _WholeMap.Clear();
+                _NewMap.Clear();
             }
 
             List<string> result = new List<string>();
@@ -172,7 +186,7 @@ namespace MyWebServer
                         {
                             if (xml.NodeType == System.Xml.XmlNodeType.Element && xml.Name == "osm")
                             {
-                                ReadOsm(xml, saveAll, searchStreet).ForEach(x => result.Add(x));
+                                ReadOsm(xml, saveAll, searchStreet).Where(x => !result.Any(y => x == y)).ToList().ForEach(x => result.Add(x));
                             }
                         }
                     }
@@ -181,6 +195,15 @@ namespace MyWebServer
             catch (FileNotFoundException)
             {
                 Console.WriteLine("The OpenStreetMap has not been found (" + _OsmPath + ")");
+            }
+
+            // After reading copy the data to our main object to read from
+            if (saveAll)
+            {
+                lock (_CopyLock)
+                {
+                    _WholeMap = new Dictionary<string, List<string>>(_NewMap);
+                }
             }
 
             if (Directory.GetFiles(_OsmPath).Count() == 0)
@@ -242,13 +265,13 @@ namespace MyWebServer
                     if (saveAll)
                     {
 
-                        if (_WholeMap.ContainsKey(street.ToLower()) && !_WholeMap[street.ToLower()].Contains(city))
+                        if (_NewMap.ContainsKey(street.ToLower()) && !_NewMap[street.ToLower()].Contains(city))
                         {
-                            _WholeMap[street.ToLower()].Add(city);
+                            _NewMap[street.ToLower()].Add(city);
                         }
-                        else if (!_WholeMap.ContainsKey(street.ToLower()))
+                        else if (!_NewMap.ContainsKey(street.ToLower()))
                         {
-                            _WholeMap.Add(street.ToLower(), new List<string>(new[] { city }));
+                            _NewMap.Add(street.ToLower(), new List<string>(new[] { city }));
                         }
                     }
                     else

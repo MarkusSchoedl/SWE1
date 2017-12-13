@@ -10,9 +10,10 @@ using System.Data.OleDb;
 using System.Data.Odbc;
 using System.Xml.Linq;
 using System.Xml;
+using MyWebServer.MyExceptions;
 
 
-namespace MyWebServer
+namespace MyWebServer.Plugins
 {
     /// <summary>
     /// A plugin that stores a Temperature and Date+Time in a DB.

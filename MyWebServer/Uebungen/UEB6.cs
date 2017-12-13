@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using BIF.SWE1.Interfaces;
 using MyWebServer;
+using MyWebServer.Plugins;
 
 namespace Uebungen
 {

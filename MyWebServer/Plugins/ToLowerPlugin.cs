@@ -6,7 +6,7 @@ using System.Web;
 using System.Net;
 using BIF.SWE1.Interfaces;
 
-namespace MyWebServer
+namespace MyWebServer.Plugins
 {
     /// <summary>
     /// This plugin receives a text in the Request Content and makes it lowercase.

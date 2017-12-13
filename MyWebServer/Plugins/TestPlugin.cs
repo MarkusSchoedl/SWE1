@@ -6,7 +6,7 @@ using System.Text;
 using BIF.SWE1.Interfaces;
 using System.Reflection;
 
-namespace MyWebServer
+namespace MyWebServer.Plugins
 {
     public class TestPlugin : IPlugin
     {

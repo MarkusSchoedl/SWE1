@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using BIF.SWE1.Interfaces;
 using System.Reflection;
+using MyWebServer.MyExceptions;
 
 namespace MyWebServer
 {
@@ -26,7 +27,7 @@ namespace MyWebServer
 
         private Encoding _Encoder = Encoding.UTF8;
         #endregion Fields
-
+        
         #region Constructor
         /// <summary>
         /// Creates a new Instance of the <see cref="Response"/> Class and sets the default values.

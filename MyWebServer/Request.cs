@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BIF.SWE1.Interfaces;
+using MyWebServer.MyExceptions;
 
 namespace MyWebServer
 {
@@ -18,7 +19,6 @@ namespace MyWebServer
         private bool _IsValid;
         private Url _Url;
         private int _HeaderCount;
-        //private int _ContentLength;
         private string _ContentType;
         private Byte[] _ContentBytes;
 

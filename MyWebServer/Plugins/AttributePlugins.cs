@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MyWebServer
+/// <summary>
+/// This namespace contains all the Plugins for the <see cref="MyWebServer"/>.
+/// </summary>
+namespace MyWebServer.Plugins
 {
     /// <summary>
     /// Attribute which we put in every own Plugin our PluginManager knows which plugins to add!

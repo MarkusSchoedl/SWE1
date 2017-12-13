@@ -8,7 +8,7 @@ using BIF.SWE1.Interfaces;
 
 using static System.Web.MimeMapping;
 
-namespace MyWebServer
+namespace MyWebServer.Plugins
 {
     /// <summary>
     /// <para> Reads files from the given URL and generates an appropiate response.
@@ -62,7 +62,7 @@ namespace MyWebServer
         /// </summary>
         /// <param name="rsp">The response to set</param>
         /// <param name="req">The request we received</param>
-        /// <returns>An byte array containing the content of a file; <see cref="null"/> if file didnt exist.</returns>
+        /// <returns>An byte array containing the content of a file; null if file didnt exist.</returns>
         protected byte[] LoadContentFromFile(IResponse rsp, IRequest req)
         {
             // open filestream with req.Url.Path
