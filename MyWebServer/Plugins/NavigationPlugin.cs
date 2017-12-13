@@ -102,7 +102,8 @@ namespace MyWebServer.Plugins
             List<string> result = new List<string>();
 
             //Check if we have a map parsed to read from
-            if (_WholeMap != null)
+            if (_WholeMap != null &&
+                (req.Url.ParameterCount == 0 || (req.Url.ParameterCount == 1 && req.Url.Parameter.ContainsKey("Update") && req.Url.Parameter["Update"] == "false")))
             {
                 lock (_CopyLock)
                 {
@@ -114,7 +115,7 @@ namespace MyWebServer.Plugins
             }
 
             // Have to parse from the OSM directly
-            if (_ReadingMutex.TryWait()) // if TryWait fails, the plugin parses a map at the moment
+            else if (_ReadingMutex.TryWait()) // if TryWait fails, the plugin parses a map at the moment
             {
                 //Requested an update
                 if (req.Url.ParameterCount == 1 && req.Url.Parameter.ContainsKey("Update")
@@ -137,6 +138,8 @@ namespace MyWebServer.Plugins
                 {
                     result = ReadWholeFile(searchStreet: searchStreet);
                 }
+
+                _ReadingMutex.Release();
             }
 
             // We are parsing maps now.
@@ -154,8 +157,6 @@ namespace MyWebServer.Plugins
                 xmlElements.Add(new XElement("ul", result.Select(i => new XElement("li", i))));
             }
             rsp.SetContent(xmlElements.ToString());
-
-            _ReadingMutex.Release();
 
             return rsp;
         }
@@ -202,7 +203,22 @@ namespace MyWebServer.Plugins
             {
                 lock (_CopyLock)
                 {
-                    _WholeMap = new Dictionary<string, List<string>>(_NewMap);
+                    if (_WholeMap == null)
+                    {
+                        _WholeMap = new Dictionary<string, List<string>>();
+                    }
+                    _WholeMap.Clear();
+
+                    // Copies all the data to the _WholeMap
+                    foreach (var pair in _NewMap)
+                    {
+                        _WholeMap.Add(pair.Key, new List<string>());
+
+                        foreach (var item in pair.Value)
+                        {
+                            _WholeMap[pair.Key].Add(item);
+                        }
+                    }
                 }
             }
 
