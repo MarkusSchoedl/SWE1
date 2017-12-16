@@ -88,8 +88,7 @@
 if not exist "$(TargetDir)Maps" mkdir "$(TargetDir)Maps";
 if not exist "$(TargetDir)Plugins" mkdir "$(TargetDir)Plugins/*";
 xcopy  /E /Y /I /R "$(SolutionDir)Sites" "$(TargetDir)Sites"
-copy "$(SolutionDir)Maps" "$(TargetDir)Maps";
-copy "$(SolutionDir)Plugins" "$(TargetDir)Plugins";</PostBuildEvent>
+copy "$(SolutionDir)Maps" "$(TargetDir)Maps";</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-/// <summary>
-/// This namespace contains all the Plugins for the <see cref="MyWebServer"/>.
-/// </summary>
 namespace MyWebServer.Plugins
 {
     /// <summary>

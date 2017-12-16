@@ -8,6 +8,9 @@ using System.Reflection;
 
 namespace MyWebServer.Plugins
 {
+    /// <summary>
+    /// This Plugin is for testing purpose only. It will not get loaded during runtime.
+    /// </summary>
     public class TestPlugin : IPlugin
     {
         /// <summary>

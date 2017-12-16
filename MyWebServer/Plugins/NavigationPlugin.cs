@@ -15,7 +15,7 @@ namespace MyWebServer.Plugins
     /// <para>Reads one or more OSM Maps and can give you all cities for a certain street.</para>
     /// </summary>
     [AttributePlugins]
-    class NavigationPlugin : IPlugin
+    public class NavigationPlugin : IPlugin
     {
         #region Fields
         // key: city, value: streets ... Streets are stored ToLower !
@@ -33,6 +33,9 @@ namespace MyWebServer.Plugins
 
         private static string _OsmSubDir = "Maps";
         private static string _OsmPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _OsmSubDir);
+
+        private const float _CanHandleReturn = 1.0f;
+        private const float _CannotHandleReturn = 0.1f;
         #endregion Fields
 
         #region Constructor
@@ -55,9 +58,9 @@ namespace MyWebServer.Plugins
         {
             if (req.Url.Path == _Url)
             {
-                return 1.0f;
+                return _CanHandleReturn;
             }
-            return 0.1f;
+            return _CannotHandleReturn;
         }
 
         /// <summary>

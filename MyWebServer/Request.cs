@@ -45,7 +45,7 @@ namespace MyWebServer
         #endregion
 
         #region Methods
-        protected void ParseStream(System.IO.StreamReader reader)
+        private void ParseStream(System.IO.StreamReader reader)
         {
             // parse the first line
             string requestLine = reader.ReadLine();
@@ -87,7 +87,7 @@ namespace MyWebServer
         #endregion
 
         #region Properties
-        protected bool IsMethodValid()
+        private bool IsMethodValid()
         {
             return _ValidOnes.Contains(_Method.ToUpper());
         }

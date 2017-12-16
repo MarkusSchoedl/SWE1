@@ -46,7 +46,7 @@ namespace Uebungen
 
         public string GetTemperatureRestUrl(DateTime from, DateTime until)
         {
-            return _TemeratureRestUrl + from.ToShortDateString().Replace(".", "-") + "/" + until.ToShortDateString().Replace(".", "-") + "?test=1";
+            return _TemeratureRestUrl + until.ToShortDateString().Replace(".", "-") + "?test=1";
         }
 
         public string GetTemperatureUrl(DateTime from, DateTime until)

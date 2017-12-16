@@ -21,8 +21,13 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <!--Theme Responsive css-->
     <link rel="stylesheet" href="assets/css/responsive.css" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="assets/js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel='stylesheet' type='text/css' href='http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css' />
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>-->
+    <!--<script src="assets/js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>-->
     <script src="assets/js/my.js"></script>
 </head>
 <body>
@@ -141,6 +146,7 @@
                                     overflow-y: scroll;
                                     align-self: center;
                                 }
+
                                 .loader {
                                     border: 3px solid #f3f3f3; /* Light grey */
                                     border-top: 3px solid #3498db; /* Blue */
@@ -180,16 +186,31 @@
                 <div class="main_features_content2">
 
                     <div class="col-sm-6 margin-top-60">
-                        <div class="single_features_right ">
-                            <h2>PRODUCT DESCRIPTIONS</h2>
-                            <p>Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum. Duis mollis, est non commodo luctus, nisi erat porttitor ligula.</p>
-                            <ul>
-                                <li>Quisque volutpat mattis eros.</li>
-                                <li>Nullam malesuada erat ut turpis.</li>
-                                <li>Suspendisse urna nibh.</li>
-                            </ul>
-                            <div class="features_buttom">
-                                <a href="" class="btn btn-default">Read More</a>
+                        <div class="single_features_right " style="margin-top:0px;">
+                            <h2>OUR TEMPERATURE RECORDINGS</h2>
+                            <p>Check the Temperature timeline here.</p>
+                            <div class="input-group" style="width: 100% !important; max-width: 1000px;">
+                                <input type="text" id="DatePickerFrom" style="width:50%;" placeholder="From">
+                                <input type="text" id="DatePickerTo" style="width:50%;" placeholder="To">
+                            </div>
+                            <div class="input-group" style="width: 100% !important; max-width: 1000px; margin-bottom: 10px;">
+                                <button type="button" onmousedown="GetTemperatureData();" class="btn btn-default btn-xs" style="width:100%; max-width: 1000px; padding-top: 0px; padding-bottom: 0px; height:100%; margin-top: 0px;">
+                                    Fetch
+                                </button>
+                            </div>
+                            <div class="input-group" style="width: 100% !important; max-width: 1000px;">
+                                <button type="button" onmousedown="SwitchTempPage('left');" class="btn btn-info btn-xs" style="width:33%; padding-top: 0px; padding-bottom: 0px; height:25px !important;">
+                                    <<
+                                </button>
+                                <button type="button" id="TempPageNum" class="btn btn-info btn-xs disabled" style="width:33%; padding-top: 0px; padding-bottom: 0px; height:25px !important;">
+                                    1
+                                </button>
+                                <button type="button" onmousedown="SwitchTempPage('right');" class="btn btn-info btn-xs" style="width:33%; padding-top: 0px; padding-bottom: 0px; height:25px !important;">
+                                    >>
+                                </button>
+                            </div>
+                            <div id="TempContent" class="" style="margin-top:10px; width:99%; padding-left: 10px !important; color: #ffffff; font-weight: bold; font-size: 15px; background: rgba(0,0,0,0.5); padding: 10px 0 10px 0;">
+                                
                             </div>
                         </div>
                     </div>

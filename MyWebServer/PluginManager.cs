@@ -22,7 +22,7 @@ namespace MyWebServer
     {
         #region Fields
         private List<IPlugin> _Plugins = new List<IPlugin>();
-        private FileSystemWatcher _DirWatcher = new FileSystemWatcher(_ExecutionLocation, "*.dll");
+        private FileSystemWatcher _DirWatcher = new FileSystemWatcher(Path.Combine(_ExecutionLocation, _PluginFolder), "*.dll");
 
         private static string _PluginFolder = "Plugins";
         private static string _ExecutionLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -35,15 +35,22 @@ namespace MyWebServer
         /// </summary>
         public PluginManager()
         {
-            // create directory Plugins
+            // create Plugins from exe
             var lst = Directory.GetFiles(_ExecutionLocation)
-                .Concat(Directory.GetFiles(Path.Combine(_ExecutionLocation, _PluginFolder)))
                 .Where(i => new[] { ".dll", ".exe" }.Contains(Path.GetExtension(i)))
                 .SelectMany(i => Assembly.LoadFrom(i).GetTypes())
                 .Where(myType => myType.IsClass
                               && !myType.IsAbstract
                               && myType.GetCustomAttributes(true).Any(x => x.GetType() == typeof(AttributePlugins))
                               && myType.GetInterfaces().Any(i => i == typeof(IPlugin)));
+
+            // Add plugins from plugin folder
+            lst = lst.Concat((Directory.GetFiles(Path.Combine(_ExecutionLocation, _PluginFolder)))
+                .Where(i => new[] { ".dll", ".exe" }.Contains(Path.GetExtension(i)))
+                .SelectMany(i => Assembly.LoadFrom(i).GetTypes())
+                .Where(myType => myType.IsClass
+                              && !myType.IsAbstract
+                              && myType.GetInterfaces().Any(i => i == typeof(IPlugin))));
 
             foreach (Type type in lst)
             {

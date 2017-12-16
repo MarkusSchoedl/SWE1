@@ -36,7 +36,7 @@ namespace MyWebServer
             _Extension = "";
             _FileName = "";
             _Fragment = "";
-            _Segments = new String[] { };
+            _Segments = new string[] { };
 
             _Parameter = new Dictionary<string, string>();
         }
@@ -72,9 +72,16 @@ namespace MyWebServer
             // One of those have been found
             else
             {
+                //Check if there is anything after the last segment 
+                if (_Segments.Count() > 0)
+                {
+                    char firstOcc = qIndex < hIndex ? '?' : '#';
+                    _Segments[_Segments.Count() - 1] = _Segments[_Segments.Count() - 1].Substring(0, (_Segments[_Segments.Count() - 1].IndexOf(firstOcc)));
+                }
+
                 // Path is from the beginning to the first # or ?
                 _Path = url.Substring(0, lowerIndex);
-
+                
                 // Save everything except the path
                 string ending = url.Substring(lowerIndex + 1, url.Length - lowerIndex - 1);
 
@@ -86,7 +93,7 @@ namespace MyWebServer
                     temp = ending.Split('?');
                     _Fragment = temp[0];
 
-                    ending = ending.Substring(ending.IndexOf('?')+1, ending.Length - ending.IndexOf('?') - 1);
+                    ending = ending.Substring(ending.IndexOf('?') + 1, ending.Length - ending.IndexOf('?') - 1);
                 }
 
                 // Split everything by & (more parameters)
@@ -118,7 +125,7 @@ namespace MyWebServer
                     }
                 }
             }
-            
+
             if (_Path == "/") // If "/" was requested, switch to the default page
             {
                 _Path = _DefaultPage;

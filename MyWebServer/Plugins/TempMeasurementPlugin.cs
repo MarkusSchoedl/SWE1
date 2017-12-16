@@ -21,15 +21,18 @@ namespace MyWebServer.Plugins
     /// Also reads a Temperature sensor in the background and stores the Data in the DB.
     /// </summary>
     [AttributePlugins]
-    class TempMeasurementPlugin : IPlugin
+    public class TempMeasurementPlugin : IPlugin
     {
         #region Fields
         /// <summary>The string how the URL has to start with we use in the Browser.</summary>
-        public const string _Url = "/gettemperature/"; //Web
+        public const string _Url = "/temperature/"; //Web
         /// <summary>The string how the REST URL has to start with.</summary>
-        public const string _RestUrl = "/temperature/"; //Rest
+        public const string _RestUrl = "/gettemperature/"; //Rest
 
         private string _ConnectionString = "Data Source=(local);Initial Catalog=MyWebServer; Integrated Security=SSPI;";
+
+        private const float _CanHandleReturn = 1.0f;
+        private const float _CannotHandleReturn = 0.1f;
         #endregion Fields
 
         #region Constructor
@@ -58,9 +61,9 @@ namespace MyWebServer.Plugins
         {
             if (req.Url.Path.StartsWith(_Url) || req.Url.Path.StartsWith(_RestUrl))
             {
-                return 1.0f;
+                return _CanHandleReturn;
             }
-            return 0.1f;
+            return _CannotHandleReturn;
         }
 
         /// <summary>
@@ -90,9 +93,8 @@ namespace MyWebServer.Plugins
         private IResponse HandleWeb(IRequest req)
         {
             Response rsp = new Response(req);
-            rsp.StatusCode = 400;
-
-            string[] segments = req.Url.Segments;
+            rsp.StatusCode = 200;
+            string content = string.Empty;
 
             string[] dates = new string[2];
 
@@ -103,27 +105,38 @@ namespace MyWebServer.Plugins
                 {
                     for (int i = 0; i < 2; i++)
                     {
-                        string[] nums = segments[i + 1].Split('-');
+                        string[] nums = req.Url.Segments[i + 1].Split('-');
                         dates[i] = nums[2] + "-" + nums[1] + "-" + nums[0];
                     }
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    rsp.SetContent("<Info>The given Request was not valid</Info>");
+                    rsp.SetContent("<table><tr><th>The given Request was not valid</th></tr></table>");
                     return rsp;
                 }
             }
             catch (FormatException)
             {
-                rsp.SetContent("<Info>The given Request was not valid</Info>");
+                rsp.SetContent("<table><tr><th>The given Request was not valid</th></tr></table>");
                 return rsp;
             }
 
-            int page = 0;
-            // Check if a page was set correctly
-            if (req.HeaderCount > 0 && req.Headers.ContainsKey("page") && string.IsNullOrEmpty(req.Headers["page"]))
+            // Check if its a valid date
+            DateTime temp;
+            for (int i = 0; i < 2; i++)
             {
-                if (!Int32.TryParse(req.Headers["page"], out page))
+                if (!DateTime.TryParse(dates[i], out temp))
+                {
+                    rsp.SetContent("<table><tr><th>The given date wasnt valid</th></tr><tr><td>Format: YYYY-MM-DD</td></tr></table>");
+                    return rsp;
+                }
+            }
+
+            // Check if a page was set correctly
+            int page = 0;
+            if (req.Url.Parameter.Count() == 1 && req.Url.Parameter.ContainsKey("page") && !string.IsNullOrEmpty(req.Url.Parameter["page"]))
+            {
+                if (!Int32.TryParse(req.Url.Parameter["page"], out page))
                 {
                     page = 1;
                 }
@@ -132,9 +145,7 @@ namespace MyWebServer.Plugins
             {
                 page = 1;
             }
-
             
-            rsp.StatusCode = 200;
             rsp.ContentType = "text/html";
             rsp.SetContent(SqlGetHTMLData(dates[0], dates[1], page));
 
@@ -146,20 +157,22 @@ namespace MyWebServer.Plugins
             Response rsp = new Response(req);
             rsp.StatusCode = 400;
 
-            string[] segments = req.Url.Segments;
+            string date = string.Empty;
 
-            string[] dates = new string[2];
+            //Containing "/temperature/[YYYY]-[DD]-[MM]/" .. The slash at the end doesnt bother us, if nothing comes after it
+            if (req.Url.Segments.Count() != 2 && req.Url.Segments.Count() == 3 && !string.IsNullOrEmpty(req.Url.Segments[2]))
+            {
+                rsp.SetContent("<Info>The given Request was not valid</Info>");
+                return rsp;
+            }
 
             //Convert date in Url to database format
             try
             {
                 try
                 {
-                    for (int i = 0; i < 2; i++)
-                    {
-                        string[] nums = segments[i + 1].Split('-');
-                        dates[i] = nums[2] + "-" + nums[1] + "-" + nums[0];
-                    }
+                    string[] nums = req.Url.Segments[1].Split('-');
+                    date = nums[2] + "-" + nums[1] + "-" + nums[0];
                 }
                 catch (IndexOutOfRangeException)
                 {
@@ -175,7 +188,7 @@ namespace MyWebServer.Plugins
 
             rsp.StatusCode = 200;
             rsp.ContentType = "text/xml";
-            rsp.SetContent(SqlGetRestData(dates[0], dates[1]));
+            rsp.SetContent(SqlGetRestData(date));
 
             return rsp;
         }
@@ -197,7 +210,7 @@ namespace MyWebServer.Plugins
         #endregion Methods
 
         #region Database
-        private string SqlGetRestData(string from, string until)
+        private string SqlGetRestData(string date)
         {
             string result = string.Empty;
             // Datenbankverbindung öffnen
@@ -213,11 +226,10 @@ namespace MyWebServer.Plugins
                     return string.Empty;
                 }
 
-                string query = "SELECT time, temp FROM Temperature WHERE time >= @from AND time <= @until FOR XML PATH;";
+                string query = "SELECT time, temp FROM Temperature WHERE CAST(time as date) = @date FOR XML PATH;";
                 SqlCommand cmd = new SqlCommand(query, db);
 
-                cmd.Parameters.AddWithValue("@from", from);
-                cmd.Parameters.AddWithValue("@until", until);
+                cmd.Parameters.AddWithValue("@date", date);
 
                 using (SqlDataReader rd = cmd.ExecuteReader())
                 {
@@ -267,9 +279,9 @@ namespace MyWebServer.Plugins
 
         private string SqlGetHTMLData(string from, string until, int page)
         {
-            if(page <= 0)
+            if (page <= 0)
             {
-                throw new Exception("Page cannot be zero or negative");
+                return "<ul><li>The page cannot be below one.</li></ul>";
             }
 
             string result = string.Empty;
@@ -290,15 +302,16 @@ namespace MyWebServer.Plugins
                 rowFrom = 10 * (page - 1) + 1; // 1, 11, 21, 41
                 rowTo = 10 * (page); // 10, 20, 30, 40
 
+                //we cast our column "time" to date so the time saved in there doesnt matter for the outcome
                 string query =
-                      "SELECT time, temp "
-                    + "FROM("
-                        + "SELECT time, temp, ROW_NUMBER() OVER(ORDER BY time) AS RowNum"
-                        + "FROM Temperature"
-                        + "WHERE time >= @from AND time <= @until"
-                    + ") AS MyDerivedTable"
-                    + "WHERE MyDerivedTable.RowNum BETWEEN @startRow AND @endRow"
-                    + "FOR XML PATH";
+                      "SELECT FORMAT(time, 'dd.MM.yyyy HH:mm', 'de-de') as time, CAST(CONVERT(decimal(15,3), temp) AS VARCHAR) + ' °C' AS temp "
+                    + "FROM( "
+                        + "SELECT time, temp, ROW_NUMBER() OVER(ORDER BY time) AS RowNum "
+                        + "FROM Temperature "
+                        + "WHERE CAST(time as date) >= @from AND CAST(time as date) <= @until "
+                    + ") AS MyDerivedTable "
+                    + "WHERE MyDerivedTable.RowNum BETWEEN @startRow AND @endRow "
+                    + "FOR XML PATH; ";
 
                 SqlCommand cmd = new SqlCommand(query, db);
 
@@ -320,9 +333,11 @@ namespace MyWebServer.Plugins
             if (result != string.Empty)
             {
                 result = "<table><tr><th>Time</th><th>Temp</th></tr>" + result + "</table>";
-                result.Replace("row", "tr");
-                result.Replace("time", "td");
-                result.Replace("temp", "td");
+                result = result.Replace("row", "tr");
+                result = result.Replace("time", "td");
+                result = result.Replace("temp", "td");
+
+                Console.Write("\n\n" + result + "\n\n");
                 return result;
             }
 

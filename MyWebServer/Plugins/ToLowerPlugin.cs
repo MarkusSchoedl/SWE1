@@ -13,11 +13,14 @@ namespace MyWebServer.Plugins
     /// This text is sent back to the client, in the Response content of course.
     /// </summary>
     [AttributePlugins]
-    class ToLowerPlugin : IPlugin
+    public class ToLowerPlugin : IPlugin
     {
         #region Fields
         public const string _Url = "/to-lower";
         private static string _EmptyMessage = "Bitte geben Sie einen Text ein";
+
+        private const float _CanHandleReturn = 1.0f;
+        private const float _CannotHandleReturn = 0.1f;
         #endregion Fields
 
         #region Properties
@@ -40,9 +43,9 @@ namespace MyWebServer.Plugins
         {
             if(req.Url.Path == _Url)
             {
-                return 1.0f;
+                return _CanHandleReturn;
             }
-            return 0.1f;
+            return _CannotHandleReturn;
         }
 
         /// <summary>

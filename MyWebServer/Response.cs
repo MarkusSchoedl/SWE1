@@ -75,8 +75,8 @@ namespace MyWebServer
         /// </summary>
         public IDictionary<string, string> Headers
         {
-            get { return _Headers; } // Should be get only
-        }// = new Dictionary<string, string>();
+            get { return _Headers; }
+        }
 
         /// <summary>
         /// Returns the content length or 0 if no content is set yet.
@@ -213,14 +213,14 @@ namespace MyWebServer
         /// Sends the response to the network stream.
         /// </summary>
         /// <param name="network"></param>
-        /// <exception cref="RequestNotSetException">The Request was Null. <seealso cref="ArgumentNullException"/></exception>
+        /// <exception cref="ArgumentNullException">The Request was null.</exception>
         /// <exception cref="NoContentSetException">If no content was set for the response</exception>
         /// <exception cref="NetworkNotWriteableException">The network was suddenly not writeable anymore</exception>
         public void Send(Stream network)
         {
             if (_Response == null)
             {
-                throw new RequestNotSetException();
+                throw new ArgumentNullException("Response should not be null");
             }
 
             if (network.CanWrite)
@@ -259,7 +259,7 @@ namespace MyWebServer
             }
         }
 
-        protected void SetHttpStatuscodes()
+        private void SetHttpStatuscodes()
         {
             _HTTP_Statuscodes = new Dictionary<int, string>();
 
