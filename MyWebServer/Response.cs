@@ -187,6 +187,7 @@ namespace MyWebServer
         public void SetContent(string content)
         {
             _Content = _Encoder.GetBytes(content);
+            AddHeader("content-length", content.Length.ToString());
         }
         /// <summary>
         /// Sets a byte[] as content.
@@ -195,6 +196,7 @@ namespace MyWebServer
         public void SetContent(byte[] content)
         {
             _Content = content;
+            AddHeader("content-length", Encoding.UTF8.GetString(_Content).Length.ToString());
         }
         /// <summary>
         /// Sets the stream as content.
@@ -205,6 +207,7 @@ namespace MyWebServer
             //TODO stream.length may be unset because its a network
             _Content = new Byte[stream.Length];
             stream.Read(_Content, 0, (int)stream.Length);
+            AddHeader("content-length", Encoding.UTF8.GetString(_Content).Length.ToString());
         }
         #endregion
 

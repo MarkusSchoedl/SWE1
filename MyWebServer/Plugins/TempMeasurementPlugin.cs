@@ -85,6 +85,7 @@ namespace MyWebServer.Plugins
                 rsp.StatusCode = 200;
                 rsp.SetContent("<row><time>2017-12-11T13:14:36.093</time><temp>2.118251151926000e+001</temp></row><row><time>2017-12-11T13:14:36.087</time><temp>2.046490146520780e+001</temp></row><row><time>2017-12-11T13:14:36.073</time><temp>2.174729141115550e+001</temp></row>");
                 rsp.ContentType = req.Url.Path.StartsWith(_RestUrl) ? "text/xml" : "text/html";
+                rsp.AddHeader("content-type", rsp.ContentType);
                 return rsp;
             }
             return req.Url.Path.StartsWith(_RestUrl) ? HandleRest(req) : HandleWeb(req);
@@ -162,6 +163,8 @@ namespace MyWebServer.Plugins
         private IResponse HandleRest(IRequest req)
         {
             Response rsp = new Response(req);
+            rsp.ContentType = "text/xml";
+            rsp.AddHeader("content-type", rsp.ContentType);
             rsp.StatusCode = 400;
 
             string date = string.Empty;
@@ -203,7 +206,7 @@ namespace MyWebServer.Plugins
 
             rsp.StatusCode = 200;
             rsp.ContentType = "text/xml";
-            rsp.SetContent(SqlGetRestData(date));
+            rsp.SetContent("<?xml version='1.0' encoding='utf-8'?><data>" + SqlGetRestData(date) + "</data>");
 
             return rsp;
         }
@@ -249,7 +252,7 @@ namespace MyWebServer.Plugins
                     return string.Empty;
                 }
 
-                string query = "SELECT time, temp FROM Temperature WHERE CAST(time as date) = @date FOR XML PATH;";
+                string query = "SELECT FORMAT(time, 'dd.MM.yyyy HH:mm', 'de-de') as time, CONVERT(decimal(15,3), temp) AS temp FROM Temperature WHERE CAST(time as date) = @date FOR XML PATH;";
                 SqlCommand cmd = new SqlCommand(query, db);
 
                 cmd.Parameters.AddWithValue("@date", date);
