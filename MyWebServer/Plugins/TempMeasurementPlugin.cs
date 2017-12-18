@@ -122,14 +122,21 @@ namespace MyWebServer.Plugins
             }
 
             // Check if its a valid date
-            DateTime temp;
+            DateTime[] dateTime = new DateTime[2];
             for (int i = 0; i < 2; i++)
             {
-                if (!DateTime.TryParse(dates[i], out temp))
+                if (!DateTime.TryParse(dates[i], out dateTime[i]))
                 {
                     rsp.SetContent("<table><tr><th>The given date wasnt valid</th></tr><tr><td>Format: YYYY-MM-DD</td></tr></table>");
                     return rsp;
                 }
+            }
+
+            //Check if date range is valid
+            if (dateTime[0] > dateTime[1])
+            {
+                rsp.SetContent("<table><tr><th>The given dates were not valid</th></tr><tr><td>There was not a valid Date-Range</td></tr></table>");
+                return rsp;
             }
 
             // Check if a page was set correctly
@@ -145,7 +152,7 @@ namespace MyWebServer.Plugins
             {
                 page = 1;
             }
-            
+
             rsp.ContentType = "text/html";
             rsp.SetContent(SqlGetHTMLData(dates[0], dates[1], page));
 
@@ -160,7 +167,7 @@ namespace MyWebServer.Plugins
             string date = string.Empty;
 
             //Containing "/temperature/[YYYY]-[DD]-[MM]/" .. The slash at the end doesnt bother us, if nothing comes after it
-            if (req.Url.Segments.Count() != 2 && req.Url.Segments.Count() == 3 && !string.IsNullOrEmpty(req.Url.Segments[2]))
+            if (req.Url.Segments.Count() == 3 && !string.IsNullOrEmpty(req.Url.Segments[2]))
             {
                 rsp.SetContent("<Info>The given Request was not valid</Info>");
                 return rsp;
@@ -183,6 +190,14 @@ namespace MyWebServer.Plugins
             catch (FormatException)
             {
                 rsp.SetContent("<Info>The given Request was not valid</Info>");
+                return rsp;
+            }
+
+            // Check if its a valid date
+            DateTime temp;
+            if (!DateTime.TryParse(date, out temp))
+            {
+                rsp.SetContent("<table><tr><th>The given date wasnt valid</th></tr><tr><td>Format: YYYY-MM-DD</td></tr></table>");
                 return rsp;
             }
 
@@ -216,7 +231,15 @@ namespace MyWebServer.Plugins
             // Datenbankverbindung öffnen
             using (SqlConnection db = new SqlConnection(_ConnectionString))
             {
-                db.Open();
+                try
+                {
+                    db.Open();
+                }
+                catch (Exception)
+                {
+                    return "<Info>The DB-Connection has failed.</Info>";
+                }
+
                 if (db.State == ConnectionState.Closed || db.State == ConnectionState.Broken)
                 {
                     throw new SqlServerNotConnectedException();
@@ -254,7 +277,15 @@ namespace MyWebServer.Plugins
             // Datenbankverbindung öffnen
             using (SqlConnection db = new SqlConnection(_ConnectionString))
             {
-                db.Open();
+                try
+                {
+                    db.Open();
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("TempPlugin: Couldnt Connect to DB!");
+                    return false;
+                }
                 temperature = Math.Round(temperature, 13, MidpointRounding.AwayFromZero);
                 if (db.State == ConnectionState.Closed || db.State == ConnectionState.Broken)
                 {
@@ -288,7 +319,14 @@ namespace MyWebServer.Plugins
             // Datenbankverbindung öffnen
             using (SqlConnection db = new SqlConnection(_ConnectionString))
             {
-                db.Open();
+                try
+                {
+                    db.Open();
+                }
+                catch (Exception)
+                {
+                    return "<ul><li>The DB-Connection has failed.</ul></li>";
+                }
                 if (db.State == ConnectionState.Closed || db.State == ConnectionState.Broken)
                 {
                     throw new SqlServerNotConnectedException();

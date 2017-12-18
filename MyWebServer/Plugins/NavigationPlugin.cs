@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using BIF.SWE1.Interfaces;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Xml.Linq;
 using System.Web;
+
+using BIF.SWE1.Interfaces;
 
 namespace MyWebServer.Plugins
 {
@@ -80,15 +79,14 @@ namespace MyWebServer.Plugins
             {
                 if (req.Headers.ContainsKey("content-length"))
                 {
-                    if (req.ContentLength > 0)
+                    if (req.ContentLength > 7 && req.ContentString.StartsWith("street="))
                     {
-                        if (req.ContentLength <= 7)
-                        {
-                            rsp.SetContent("Bitte geben Sie eine Anfrage ein");
-                            return rsp;
-                        }
-
                         searchStreet = HttpUtility.UrlDecode(req.ContentString.Substring(7));
+                    }
+                    else if(!(req.Url.ParameterCount >= 1 && req.Url.Parameter.ContainsKey("Update") && req.Url.Parameter["Update"] == "true"))
+                    {
+                        rsp.SetContent("Bitte geben Sie eine Anfrage ein");
+                        return rsp;
                     }
                 }
 

@@ -10,7 +10,7 @@ namespace MyWebServer
     /// This Class provides a Mutex which doesnt stop the thread if we want to lock.
     /// It provides Methods which just Try to lock and return a certain flag indicating if it worked or not.
     /// </summary>
-    class MyMutex
+    public class MyMutex
     {
         #region Fields
         private bool _IsLocked = false;

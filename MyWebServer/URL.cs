@@ -81,7 +81,7 @@ namespace MyWebServer
 
                 // Path is from the beginning to the first # or ?
                 _Path = url.Substring(0, lowerIndex);
-                
+
                 // Save everything except the path
                 string ending = url.Substring(lowerIndex + 1, url.Length - lowerIndex - 1);
 
@@ -118,10 +118,13 @@ namespace MyWebServer
 
                     // if the questionmark was found first:
                     // split the parameter again and save it 
-                    if (lowerIndex == qIndex)
+                    if (true)
                     {
                         string[] keynvalue = currentVar.Split('=');
-                        _Parameter.Add(keynvalue[0], keynvalue[1]);
+                        if (keynvalue.Count() == 2)
+                        {
+                            _Parameter.Add(keynvalue[0], keynvalue[1]);
+                        }
                     }
                 }
             }

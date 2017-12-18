@@ -16,6 +16,7 @@ namespace MyWebServer.Plugins
     public class ToLowerPlugin : IPlugin
     {
         #region Fields
+        /// <summary>The URL to call the ToLower Plugin</summary>
         public const string _Url = "/to-lower";
         private static string _EmptyMessage = "Bitte geben Sie einen Text ein";
 
